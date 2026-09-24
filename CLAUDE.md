@@ -39,7 +39,8 @@ Kurawa/
 │   ├── economy.json        # équilibrage : coûts, pity, énergie, XP, règles de combat
 │   ├── enemies.json        # mobs génériques (donjons) et boss nommés (fins de chapitre)
 │   ├── story.json          # 4 chapitres : textes, combats, récompenses de premier passage
-│   └── dungeons.json       # donjons rejouables (Or, XP, élémentaires)
+│   ├── dungeons.json       # donjons rejouables (Or, XP, élémentaires)
+│   └── tutorial.json       # texte du tutoriel de première partie
 ├── Scripts/
 │   ├── DataLoader.gd       # lecture des Data/*.json + couleurs éléments/raretés
 │   ├── GachaSystem.gd      # tirage RNG + pity system
@@ -63,7 +64,9 @@ Kurawa/
 │   ├── DungeonScreen.gd    # donjons rejouables
 │   ├── TeamSelect.gd       # composition de l'équipe de 3 avant un combat
 │   ├── CombatArena.gd      # écran de combat (manuel + auto)
-│   └── CombatUnit.gd       # vignette d'un combattant en combat
+│   ├── CombatUnit.gd       # vignette d'un combattant en combat
+│   ├── TitleScreen.gd      # écran d'accueil (état de la guilde, entrée en jeu)
+│   └── Tutorial.gd         # tutoriel mécanique de première partie
 ├── Tests/
 │   ├── run_tests.gd        # tests headless (voir « Lancer les tests »)
 │   ├── capture_screens.gd  # captures PNG des écrans (voir « Relire l'UI »)
@@ -79,6 +82,8 @@ Kurawa/
 │   ├── TeamSelect.tscn     # composition d'équipe
 │   ├── CombatArena.tscn    # écran de combat
 │   ├── CombatUnit.tscn     # vignette de combattant
+│   ├── TitleScreen.tscn    # écran d'accueil
+│   ├── Tutorial.tscn       # tutoriel de première partie
 │   └── GachaTest.tscn      # scène de debug Phase 1 (garde son propre PlayerManager)
 └── Assets/
     ├── Characters/         # illustrations des personnages
@@ -100,7 +105,7 @@ par l'auteur : ils définissent la direction visuelle décrite ci-dessous.
 
 **Ne pas sauter à la Phase 2 avant que la Phase 1 soit testée et fonctionnelle** (probabilités de tirage vérifiées, sauvegarde fiable).
 
-**État au 2026-09-24 :** Phases 1, 2 et 3 terminées et couvertes par `Tests/run_tests.gd` (92 vérifications), de l'invocation au combat gagné avec récompenses. Reste la Phase 4 : illustrations, audio, exports.
+**État au 2026-09-24 :** Phases 1, 2 et 3 terminées et couvertes par `Tests/run_tests.gd` (99 vérifications), de l'écran d'accueil au combat gagné avec récompenses, tutoriel de première partie compris. Reste la Phase 4 : illustrations, audio, exports.
 
 ## Architecture Phases 1-2
 
@@ -166,6 +171,9 @@ Captures PNG de tous les écrans (nécessite un vrai rendu, donc **pas** `--head
   `TeamSelect` → `Main.start_combat()` paie l'énergie → `CombatArena.begin()`. L'arène est le
   seul endroit qui verse les récompenses (`PlayerManager.grant_victory`). Un écran de contenu
   ne lance jamais un combat lui-même
+- **Lancement :** `Main` affiche `TitleScreen` par-dessus tout (calque 12) ; « Entrer dans la
+  guilde » le referme et déclenche `Tutorial` si `player.tutorial_seen` est faux. Le tutoriel
+  bascule lui-même sur l'onglet dont il parle
 - `CombatArena.step_delay` cadence l'affichage ; à 0 la boucle se déroule d'un trait
   (c'est ce que font les tests)
 

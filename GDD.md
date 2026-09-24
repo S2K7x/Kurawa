@@ -166,7 +166,8 @@ Voir `CLAUDE.md` pour la structure des dossiers.
 8. Esquisser les 2-3 premiers chapitres du mode histoire pour poser le ton avant de coder l'IA tactique des donjons.
 9. Phase 3 — moteur de combat : `CombatManager.gd` (ATB par Vitesse, multiplicateurs élémentaires, IA tactique qui achève les cibles à portée et exploite les faiblesses), compétences formalisées en données exécutables, `Data/enemies.json` / `story.json` / `dungeons.json`. ✅
 10. Phase 3 — écrans : sélection d'équipe (3 guerriers), CombatArena (manuel + bouton auto), StoryScreen, DungeonScreen, écran de récompenses. ✅
-11. Phase 4 : illustrations finales, audio, exports Mac/Web/iOS.
+11. Écran d'accueil et tutoriel mécanique de première partie (6 cartes, sans PNJ). ✅
+12. Phase 4 : illustrations finales, audio, exports Mac/Web/iOS.
 
 **Coups critiques (ajout Phase 3) :** 15% de chance, ×1.5 dégâts. Sans eux, deux équipes de force voisine donnaient toujours le même vainqueur (taux de victoire mesurés soit 0%, soit 100%).
 
