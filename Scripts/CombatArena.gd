@@ -173,11 +173,47 @@ func _on_unit_selected(unit: Combatant) -> void:
 func _flush() -> void:
 	%TurnLabel.text = "TOUR %d" % _combat.turn_count
 	while _logged_events < _combat.events.size():
-		var line := _describe(_combat.events[_logged_events])
+		var event: Dictionary = _combat.events[_logged_events]
+		var line := _describe(event)
 		if line != "":
 			_log.append_text(line + "\n")
+		_react(event)
 		_logged_events += 1
 	_refresh_widgets()
+
+## Traduit un événement en réaction visuelle sur la vignette concernée.
+func _react(event: Dictionary) -> void:
+	match str(event.get("kind", "")):
+		"attack":
+			var struck := _widget_named(str(event.get("target", "")))
+			if struck != null:
+				struck.flash_damage()
+		"critical":
+			var victim := _widget_named(str(event.get("target", "")))
+			if victim != null:
+				victim.flash_damage(true)
+		"skill":
+			for name: String in event.get("targets", []):
+				var target := _widget_named(name)
+				if target != null and int(event.get("damage", 0)) > 0:
+					target.flash_damage()
+		"burn":
+			var burning := _widget_named(str(event.get("actor", "")))
+			if burning != null:
+				burning.flash_damage()
+		"heal":
+			for widget: CombatUnit in _widgets.values():
+				if widget.unit.is_ally == _current_is_ally():
+					widget.flash_heal()
+
+func _current_is_ally() -> bool:
+	return _current_actor == null or _current_actor.is_ally
+
+func _widget_named(unit_name: String) -> CombatUnit:
+	for unit: Combatant in _widgets:
+		if unit.name == unit_name:
+			return _widgets[unit]
+	return null
 
 func _refresh_widgets() -> void:
 	for unit: Combatant in _widgets:

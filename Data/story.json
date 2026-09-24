@@ -167,6 +167,49 @@
         "eclats_dimensionnels": 400,
         "or_de_guilde": 3000
       }
+    },
+    {
+      "id": "ch_05",
+      "title": "Le Registre des Guildes",
+      "intro": "Perdre une championne ne coûte rien à l'Ordre Voracis. Perdre la face devant le registre des guildes, si.\n\nL'Archonte Vehl Draska monte lui-même sur les hauts-plateaux, avec de quoi rayer ton nom du registre et la certitude tranquille que personne ne le lui reprochera.",
+      "outro": "Draska referme son registre sans y écrire une ligne. Il redescend, et l'Ordre redescend avec lui.\n\nTa guilde n'a rien conquis : elle a seulement cessé d'être quelque chose qu'on efface. Pour une guilde née sur trois planches et une promesse, c'est déjà beaucoup.",
+      "battles": [
+        {
+          "name": "L'escorte du registre",
+          "enemies": [
+            {
+              "id": "mob_carcasse_ardente",
+              "level": 24
+            },
+            {
+              "id": "mob_veilleur_brise",
+              "level": 25
+            },
+            {
+              "id": "mob_colosse_faille",
+              "level": 24
+            }
+          ]
+        },
+        {
+          "name": "Vehl Draska, Archonte de l'Ordre",
+          "boss": true,
+          "enemies": [
+            {
+              "id": "boss_vehl_draska",
+              "level": 24
+            },
+            {
+              "id": "mob_carcasse_ardente",
+              "level": 20
+            }
+          ]
+        }
+      ],
+      "first_clear": {
+        "eclats_dimensionnels": 600,
+        "or_de_guilde": 5000
+      }
     }
   ]
 }

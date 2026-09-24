@@ -485,6 +485,228 @@
           }
         ]
       }
+    },
+    {
+      "id": "kur_014",
+      "name": "Bram Oskal",
+      "origin": "Fonderie Basse de Terrevent",
+      "element": "Feu",
+      "rarity": "R",
+      "stats": {
+        "atk": 115,
+        "def": 95,
+        "vit": 80,
+        "pv": 1000
+      },
+      "skill": {
+        "name": "Enclume Rouge",
+        "description": "Assomme la cible d'un revers de masse encore chaude de la forge.",
+        "target": "enemy_single",
+        "power": 1.55,
+        "hits": 1,
+        "cooldown": 3,
+        "effects": [
+          {
+            "type": "stun",
+            "target": "target",
+            "chance": 0.2,
+            "duration": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "kur_015",
+      "name": "Ondine Charme",
+      "origin": "Lagune de Sylverne",
+      "element": "Eau",
+      "rarity": "R",
+      "stats": {
+        "atk": 85,
+        "def": 90,
+        "vit": 105,
+        "pv": 920
+      },
+      "skill": {
+        "name": "Rappel de Marée",
+        "description": "Rappelle l'eau dans les plaies de ses alliés.",
+        "target": "ally_all",
+        "power": 0.0,
+        "hits": 0,
+        "cooldown": 3,
+        "effects": [
+          {
+            "type": "heal_per_turn",
+            "target": "ally_all",
+            "chance": 1.0,
+            "duration": 2,
+            "value": 0.35
+          }
+        ]
+      }
+    },
+    {
+      "id": "kur_016",
+      "name": "Pike Ferral",
+      "origin": "Relais Foudroyé d'Ohm",
+      "element": "Foudre",
+      "rarity": "R",
+      "stats": {
+        "atk": 125,
+        "def": 65,
+        "vit": 118,
+        "pv": 800
+      },
+      "skill": {
+        "name": "Coup de Rail",
+        "description": "Charge électrique lancée à bout portant, deux fois.",
+        "target": "enemy_single",
+        "power": 0.9,
+        "hits": 2,
+        "cooldown": 3,
+        "effects": []
+      }
+    },
+    {
+      "id": "kur_017",
+      "name": "Nell Ashe",
+      "origin": "Crêtes de Kaelin",
+      "element": "Vent",
+      "rarity": "R",
+      "stats": {
+        "atk": 105,
+        "def": 75,
+        "vit": 128,
+        "pv": 840
+      },
+      "skill": {
+        "name": "Fauche Basse",
+        "description": "Coupe les appuis de l'adversaire le plus entamé.",
+        "target": "enemy_lowest_hp",
+        "power": 1.5,
+        "hits": 1,
+        "cooldown": 3,
+        "effects": [
+          {
+            "type": "speed_up",
+            "target": "self",
+            "chance": 1.0,
+            "duration": 2,
+            "value": 0.2
+          }
+        ]
+      }
+    },
+    {
+      "id": "kur_018",
+      "name": "Sœur Verek",
+      "origin": "Cloître Calciné",
+      "element": "Feu",
+      "rarity": "SR",
+      "stats": {
+        "atk": 155,
+        "def": 125,
+        "vit": 95,
+        "pv": 1220
+      },
+      "skill": {
+        "name": "Braise Protectrice",
+        "description": "Un mur de cendre chaude : l'équipe encaisse moins et l'assaillant se brûle.",
+        "target": "ally_all",
+        "power": 0.0,
+        "hits": 0,
+        "cooldown": 4,
+        "effects": [
+          {
+            "type": "damage_reduction",
+            "target": "ally_all",
+            "chance": 1.0,
+            "duration": 2,
+            "value": 0.2
+          },
+          {
+            "type": "atk_up",
+            "target": "ally_all",
+            "chance": 1.0,
+            "duration": 2,
+            "value": 0.12
+          }
+        ]
+      }
+    },
+    {
+      "id": "kur_019",
+      "name": "Dorn Kessel",
+      "origin": "Bas-Fonds de Thassar",
+      "element": "Eau",
+      "rarity": "SR",
+      "stats": {
+        "atk": 160,
+        "def": 120,
+        "vit": 92,
+        "pv": 1280
+      },
+      "skill": {
+        "name": "Ancre Noire",
+        "description": "Cloue une cible au sol et se nourrit de ses efforts pour tenir.",
+        "target": "enemy_single",
+        "power": 1.7,
+        "hits": 1,
+        "cooldown": 4,
+        "effects": [
+          {
+            "type": "stun",
+            "target": "target",
+            "chance": 0.45,
+            "duration": 1
+          },
+          {
+            "type": "lifesteal",
+            "target": "ally_all",
+            "chance": 1.0,
+            "value": 0.12
+          }
+        ]
+      }
+    },
+    {
+      "id": "kur_020",
+      "name": "Yris Vantal",
+      "origin": "Tour Électromagnétique de Nordheim",
+      "element": "Foudre",
+      "rarity": "SSR",
+      "stats": {
+        "atk": 215,
+        "def": 125,
+        "vit": 155,
+        "pv": 1420
+      },
+      "skill": {
+        "name": "Fracture en Chaîne",
+        "description": "Une décharge qui saute de cible en cible et laisse tout le monde à découvert.",
+        "target": "enemy_all",
+        "power": 1.55,
+        "hits": 1,
+        "cooldown": 5,
+        "effects": [
+          {
+            "type": "defense_ignore",
+            "target": "target",
+            "value": 0.3
+          },
+          {
+            "type": "stun",
+            "target": "target",
+            "chance": 0.35,
+            "duration": 1
+          },
+          {
+            "type": "extra_turn",
+            "target": "self",
+            "chance": 0.35
+          }
+        ]
+      }
     }
   ],
   "basic_attack": {

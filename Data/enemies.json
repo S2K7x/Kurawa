@@ -142,6 +142,34 @@
           }
         ]
       }
+    },
+    {
+      "id": "mob_carcasse_ardente",
+      "name": "Carcasse Ardente",
+      "element": "Feu",
+      "stats": {
+        "atk": 140,
+        "def": 115,
+        "vit": 85,
+        "pv": 1400
+      },
+      "skill": {
+        "name": "Effondrement",
+        "description": "S'écroule en flammes sur toute la ligne adverse.",
+        "target": "enemy_all",
+        "power": 1.05,
+        "hits": 1,
+        "cooldown": 4,
+        "effects": [
+          {
+            "type": "burn",
+            "target": "target",
+            "chance": 0.6,
+            "duration": 2,
+            "value": 0.1
+          }
+        ]
+      }
     }
   ],
   "bosses": [
@@ -217,6 +245,47 @@
             "type": "defense_ignore",
             "target": "target",
             "value": 0.25
+          }
+        ]
+      }
+    },
+    {
+      "id": "boss_vehl_draska",
+      "name": "Vehl Draska",
+      "guild": "L'Ordre Voracis",
+      "title": "Archonte de l'Ordre",
+      "element": "Vent",
+      "stats": {
+        "atk": 155,
+        "def": 120,
+        "vit": 145,
+        "pv": 2600
+      },
+      "skill": {
+        "name": "Radiation du Registre",
+        "description": "Raye une guilde d'un trait de plume : la frappe s'abat deux fois, et plus fort sur qui vacille.",
+        "target": "enemy_single",
+        "power": 1.45,
+        "hits": 2,
+        "cooldown": 3,
+        "effects": [
+          {
+            "type": "bonus_vs_wounded",
+            "target": "target",
+            "value": 0.45,
+            "threshold": 0.6
+          },
+          {
+            "type": "speed_up",
+            "target": "self",
+            "chance": 1.0,
+            "duration": 2,
+            "value": 0.3
+          },
+          {
+            "type": "extra_turn",
+            "target": "self",
+            "chance": 0.3
           }
         ]
       }

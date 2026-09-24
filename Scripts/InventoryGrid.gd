@@ -7,6 +7,8 @@ const CARD_SCENE := preload("res://Scenes/CharacterCard.tscn")
 const ALL := "Tous"
 const RARITIES: Array[String] = ["SSR", "SR", "R"]
 const RARITY_SORT := {"SSR": 0, "SR": 1, "R": 2}
+## Critères de tri proposés, dans l'ordre d'affichage.
+const SORTS := ["Rareté", "Niveau", "Étoiles"]
 ## 3 colonnes sur 720 px de large : hauteur choisie pour rester proche du ratio 2:3 des posters.
 const CARD_HEIGHT := 312
 
@@ -25,6 +27,7 @@ const CARD_HEIGHT := 312
 var _player: PlayerManager
 var _rarity_filter: String = ALL
 var _element_filter: String = ALL
+var _sort: String = SORTS[0]
 
 ## Appelé par Main juste après l'instanciation (l'écran ne crée jamais son PlayerManager).
 func setup(player: PlayerManager) -> void:
@@ -36,6 +39,7 @@ func setup(player: PlayerManager) -> void:
 func _ready() -> void:
 	_build_filters(%RarityFilters, [ALL] + RARITIES, _on_rarity_filter)
 	_build_filters(%ElementFilters, [ALL] + DataLoader.element_names(), _on_element_filter)
+	_build_filters(%SortFilters, SORTS, _on_sort, SORTS[0])
 	var close_button: Button = %DetailClose
 	close_button.pressed.connect(_detail.hide)
 	# Même principe que la révélation : la fiche passe au-dessus de toute l'application.
@@ -50,14 +54,15 @@ func _ready() -> void:
 func on_shown() -> void:
 	_refresh()
 
-func _build_filters(host: HBoxContainer, values: Array, callback: Callable) -> void:
+## Rangée de boutons exclusifs (filtre ou tri). `active` désigne celui coché au départ.
+func _build_filters(host: HBoxContainer, values: Array, callback: Callable, active: String = ALL) -> void:
 	var group := ButtonGroup.new()
 	for value: String in values:
 		var button := Button.new()
 		button.text = value
 		button.toggle_mode = true
 		button.button_group = group
-		button.button_pressed = value == ALL
+		button.button_pressed = value == active
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.add_theme_font_size_override("font_size", 19)
 		if value != ALL:
@@ -76,6 +81,10 @@ func _on_element_filter(value: String) -> void:
 	_element_filter = value
 	_refresh()
 
+func _on_sort(value: String) -> void:
+	_sort = value
+	_refresh()
+
 ## Guerriers possédés passant les filtres, triés par rareté puis par nom.
 func _filtered_ids() -> Array:
 	var ids: Array = []
@@ -86,15 +95,36 @@ func _filtered_ids() -> Array:
 		if _element_filter != ALL and data.get("element", "") != _element_filter:
 			continue
 		ids.append(character_id)
-	ids.sort_custom(func(a: String, b: String) -> bool:
-		var da := _player.get_character_data(a)
-		var db := _player.get_character_data(b)
-		var ra: int = RARITY_SORT.get(da.get("rarity", "R"), 9)
-		var rb: int = RARITY_SORT.get(db.get("rarity", "R"), 9)
-		if ra != rb:
-			return ra < rb
-		return str(da.get("name", "")) < str(db.get("name", "")))
+	ids.sort_custom(_comparator())
 	return ids
+
+## Le nom sert toujours de départage : deux guerriers à égalité gardent un ordre stable.
+func _comparator() -> Callable:
+	match _sort:
+		"Niveau":
+			return func(a: String, b: String) -> bool:
+				var la: int = int(_player.inventory[a].get("level", 1))
+				var lb: int = int(_player.inventory[b].get("level", 1))
+				if la != lb:
+					return la > lb
+				return _name_of(a) < _name_of(b)
+		"Étoiles":
+			return func(a: String, b: String) -> bool:
+				var sa: int = int(_player.inventory[a].get("stars", 1))
+				var sb: int = int(_player.inventory[b].get("stars", 1))
+				if sa != sb:
+					return sa > sb
+				return _name_of(a) < _name_of(b)
+		_:
+			return func(a: String, b: String) -> bool:
+				var ra: int = RARITY_SORT.get(_player.get_character_data(a).get("rarity", "R"), 9)
+				var rb: int = RARITY_SORT.get(_player.get_character_data(b).get("rarity", "R"), 9)
+				if ra != rb:
+					return ra < rb
+				return _name_of(a) < _name_of(b)
+
+func _name_of(character_id: String) -> String:
+	return str(_player.get_character_data(character_id).get("name", ""))
 
 func _refresh() -> void:
 	if _player == null or not is_node_ready():

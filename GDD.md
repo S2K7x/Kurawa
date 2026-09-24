@@ -30,7 +30,7 @@ Le joueur est **Maître de guilde** : il dirige une guilde qui forme et envoie d
 
 **Guilde rivale de lancement :** **L'Ordre Voracis** (nom proposé, modifiable) — une seule guilde antagoniste pour le premier arc, de type **"puissance à tout prix"**. Elle exploite la Brèche sans précaution pour maximiser sa force, quitte à prendre des risques que la guilde du joueur refuse. Rivalité idéologique claire : ambition/pouvoir sans limite vs approche plus prudente/responsable du joueur.
 
-**Contenu de lancement (mode histoire) :** 3-5 chapitres courts, narrés en texte simple entre les combats (écran "Chapitre X : ..." + quelques lignes de contexte, pas de dialogues mis en scène avec portraits pour l'instant). Le dernier chapitre culmine sur un premier boss nommé de l'Ordre Voracis.
+**Contenu de lancement (mode histoire) :** 5 chapitres courts, narrés en texte simple entre les combats (écran "Chapitre X : ..." + quelques lignes de contexte, pas de dialogues mis en scène avec portraits pour l'instant). Le dernier chapitre culmine sur un premier boss nommé de l'Ordre Voracis.
 
 **Récompenses de boss :** chaque boss de fin de chapitre donne une récompense spéciale et notable (Or important, matériau rare, éventuellement garantie de tirage) plutôt qu'une simple variante plus généreuse des récompenses standards.
 
@@ -69,7 +69,7 @@ Le joueur est **Maître de guilde** : il dirige une guilde qui forme et envoie d
 
 **Fiche personnage type :** Nom, Origine/monde d'où il vient, Élément, Rareté, Stats (ATK/DEF/VIT/PV), Compétence spéciale unique.
 
-Voir `Data/characters_db.json` pour le catalogue de départ (9-12 guerriers).
+Voir `Data/characters_db.json` pour le catalogue (20 guerriers : 8 R, 7 SR, 5 SSR).
 
 ## Système de combat
 
@@ -171,4 +171,4 @@ Voir `CLAUDE.md` pour la structure des dossiers.
 
 **Coups critiques (ajout Phase 3) :** 15% de chance, ×1.5 dégâts. Sans eux, deux équipes de force voisine donnaient toujours le même vainqueur (taux de victoire mesurés soit 0%, soit 100%).
 
-**Équilibrage mesuré (équipe type starter + 2 R, 1★, `Tests/balance_report.gd`) :** chapitre 1 franchissable dès le niveau 1 ; boss du chapitre 2 vers le niveau 10 ; chapitre 3 vers le niveau 10 ; chapitre 4 vers le niveau 20, et sa championne vers le niveau 30. La courbe force donc bien le farm en donjon entre les chapitres, comme voulu.
+**Équilibrage mesuré (`Tests/balance_report.gd`, deux équipes de référence : « modeste » = starter + 2 R à 1★, « investie » = 3 SSR à 3★) :** pour l'équipe modeste, chapitre 1 franchissable dès le niveau 1 ; boss du chapitre 2 vers le niveau 10 ; chapitre 3 vers le niveau 10 ; chapitre 4 vers le niveau 20, sa championne vers le niveau 30, et l'Archonte du chapitre 5 vers le niveau 35-40. Une équipe investie passe le même contenu bien plus tôt (l'Archonte dès le niveau 20). La courbe force donc bien le farm en donjon entre les chapitres, comme voulu.

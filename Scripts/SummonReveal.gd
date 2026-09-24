@@ -53,7 +53,8 @@ func _reveal_current() -> void:
 
 	_counter.text = "%d / %d" % [_index + 1, _results.size()]
 	_note.text = _note_for(result)
-	_note.add_theme_color_override("font_color", color)
+	_note.add_theme_color_override("font_color", Style.GOLD if not result.get("is_new", false) else color)
+	_pop_note(duration_for(str(result.get("rarity", "R"))))
 
 	_clear(_card_host)
 	var card: CharacterCard = CARD_SCENE.instantiate()
@@ -71,6 +72,21 @@ func _note_for(result: Dictionary) -> String:
 	if int(result.get("or_bonus", 0)) > 0:
 		return "Palier max → +%d Or" % int(result["or_bonus"])
 	return "Doublon → %d★" % int(result.get("stars", 1))
+
+func duration_for(rarity: String) -> float:
+	return float(REVEAL_TIME.get(rarity, 0.3))
+
+## La mention (NOUVEAU / doublon → N★) arrive après la carte, d'un coup, pour qu'on la lise.
+func _pop_note(delay: float) -> void:
+	_note.modulate.a = 0.0
+	_note.pivot_offset = _note.size / 2.0
+	_note.scale = Vector2(0.7, 0.7)
+	var tween := create_tween()
+	tween.tween_interval(delay * 0.7)
+	tween.set_parallel(true)
+	tween.tween_property(_note, "modulate:a", 1.0, 0.18)
+	tween.tween_property(_note, "scale", Vector2.ONE, 0.32) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 func _play_reveal(card: Control, rarity: String, color: Color) -> void:
 	_busy = true

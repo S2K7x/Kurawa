@@ -105,6 +105,26 @@ func _initials_of(character_name: String) -> String:
 		initials += part.substr(0, 1).to_upper()
 	return initials
 
+## Encaisse un coup à l'écran : la vignette blanchit et tressaute brièvement.
+## Purement cosmétique — les PV, eux, ont déjà été retirés par le moteur.
+func flash_damage(critical: bool = false) -> void:
+	var start := position
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(self, "modulate", Color(1.6, 0.7, 0.7) if not critical else Color(2.0, 1.4, 0.6), 0.06)
+	tween.chain().tween_property(self, "modulate", Color.WHITE, 0.18)
+	var shake := create_tween()
+	var amplitude := 9.0 if critical else 5.0
+	shake.tween_property(self, "position", start + Vector2(amplitude, 0), 0.04)
+	shake.tween_property(self, "position", start - Vector2(amplitude * 0.6, 0), 0.05)
+	shake.tween_property(self, "position", start, 0.05)
+
+## Soin reçu : un souffle vert, sans secousse.
+func flash_heal() -> void:
+	var tween := create_tween()
+	tween.tween_property(self, "modulate", Color(0.7, 1.5, 0.9), 0.08)
+	tween.tween_property(self, "modulate", Color.WHITE, 0.2)
+
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		selected.emit(unit)

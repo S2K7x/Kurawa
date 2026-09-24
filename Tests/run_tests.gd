@@ -284,6 +284,24 @@ func finish_ui_tests() -> void:
 		"la galerie affiche les %d guerriers possédés" % _main.player.inventory.size())
 	var starter_card: CharacterCard = grid.get_child(0)
 	check(starter_card.character_id != "", "carte liée à un guerrier (%s)" % starter_card.character_id)
+	# Tri de la galerie : chaque critère doit réellement réordonner les cartes.
+	inventory._sort = "Niveau"
+	inventory._refresh()
+	var by_level: Array = inventory._filtered_ids()
+	inventory._sort = "Étoiles"
+	inventory._refresh()
+	var by_stars: Array = inventory._filtered_ids()
+	inventory._sort = "Rareté"
+	inventory._refresh()
+	var by_rarity: Array = inventory._filtered_ids()
+	check(by_level.size() == by_stars.size() and by_stars.size() == by_rarity.size(),
+		"les trois tris affichent le même nombre de guerriers")
+	var levels_sorted := true
+	for i in range(by_level.size() - 1):
+		levels_sorted = levels_sorted and int(_main.player.inventory[by_level[i]]["level"]) \
+			>= int(_main.player.inventory[by_level[i + 1]]["level"])
+	check(levels_sorted, "le tri par niveau est décroissant")
+
 	inventory._show_detail(starter_card.character_id)
 	check(inventory._detail.visible and inventory._detail_body.text.contains("STATS"),
 		"la fiche détaillée s'ouvre au clic sur une carte")

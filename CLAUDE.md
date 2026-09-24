@@ -105,7 +105,7 @@ par l'auteur : ils définissent la direction visuelle décrite ci-dessous.
 
 **Ne pas sauter à la Phase 2 avant que la Phase 1 soit testée et fonctionnelle** (probabilités de tirage vérifiées, sauvegarde fiable).
 
-**État au 2026-09-24 :** Phases 1, 2 et 3 terminées et couvertes par `Tests/run_tests.gd` (99 vérifications), de l'écran d'accueil au combat gagné avec récompenses, tutoriel de première partie compris. Reste la Phase 4 : illustrations, audio, exports.
+**État au 2026-09-24 :** Phases 1, 2 et 3 terminées et couvertes par `Tests/run_tests.gd` (101 vérifications), de l'écran d'accueil au combat gagné avec récompenses, tutoriel de première partie compris. Reste la Phase 4 : illustrations, audio, exports.
 
 ## Architecture Phases 1-2
 
