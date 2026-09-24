@@ -155,7 +155,7 @@ Voir `CLAUDE.md` pour la structure des dossiers.
 1. Créer le dossier de projet et initialiser Godot 4 + Git. ✅ (fait — `/Users/shai/Github/Kurawa`)
 2. Rédiger le CLAUDE.md du projet à partir de ce document. ✅
 3. Générer characters_db.json avec 9-12 guerriers originaux (Phase 1). ✅ (voir `Data/characters_db.json`)
-4. Implémenter GachaSystem.gd (taux + pity) et valider les probabilités avant tout visuel.
-5. Concevoir le modèle de doublons (paliers d'étoiles/bonus par personnage) et le brancher sur PlayerManager.gd.
-6. Ébaucher StaminaSystem.gd (recharge automatique, plafond, coût par combat) en parallèle du GachaSystem.
+4. Implémenter GachaSystem.gd (taux + pity) et valider les probabilités avant tout visuel. ✅ (vérifié sur 1M tirages, voir `Tests/run_tests.gd`)
+5. Concevoir le modèle de doublons (paliers d'étoiles/bonus par personnage) et le brancher sur PlayerManager.gd. ✅ (ProgressionSystem.gd — doublon au-delà de 6★ converti en Or)
+6. Ébaucher StaminaSystem.gd (recharge automatique, plafond, coût par combat) en parallèle du GachaSystem. ✅ (recharge aussi hors-jeu)
 7. Esquisser les 2-3 premiers chapitres du mode histoire pour poser le ton avant de coder l'IA tactique des donjons.

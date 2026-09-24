@@ -23,6 +23,10 @@ window/handheld/orientation="portrait"
 window/stretch/mode="canvas_items"
 window/stretch/aspect="keep"
 
+[gui]
+
+theme/custom="res://Assets/UI/kurawa_theme.tres"
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"

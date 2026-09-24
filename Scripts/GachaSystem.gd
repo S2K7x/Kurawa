@@ -1,71 +1,96 @@
-extends Node
+extends RefCounted
 class_name GachaSystem
 
-## Gère les tirages (simple / x10) depuis la Brèche, avec pity system.
-## Charge les taux et le catalogue depuis Data/characters_db.json.
+## Tirages (simple / x10) depuis la Brèche, avec pity system.
+## Logique pure : ne touche ni aux monnaies ni à l'inventaire (voir PlayerManager.summon).
+## Taux et catalogue : Data/characters_db.json · coûts et pity : Data/economy.json.
 ## Voir GDD.md > Économie pour les règles de conception.
 
-const DB_PATH := "res://Data/characters_db.json"
+const RARITY_ORDER: Array[String] = ["SSR", "SR", "R"] # du plus rare au plus commun
+const RARITY_RANK := {"R": 0, "SR": 1, "SSR": 2}
 
-var characters: Array = []
 var rarities: Dictionary = {}
-var multi_pull_config: Dictionary = {}
+var cost_single: int = 0
+var multi_size: int = 10
+var multi_discount_pct: int = 0
+var multi_guaranteed_min: String = "SR"
+var pity_sr_threshold: int = 0
+var pity_ssr_threshold: int = 0
 
-# Pity counters -- nombre de tirages depuis le dernier SR / SSR obtenu
+## Désactivable uniquement pour mesurer les taux bruts en test.
+var pity_enabled: bool = true
+
+# Compteurs de pity : tirages depuis le dernier SR+ / SSR obtenu. Sauvegardés via to_dict().
 var pulls_since_sr: int = 0
 var pulls_since_ssr: int = 0
 
-# Seuils de pity (valeurs de départ suggérées dans le GDD, à ajuster en test)
-const PITY_SR_THRESHOLD := 10
-const PITY_SSR_THRESHOLD := 50
+var rng := RandomNumberGenerator.new()
 
-func _ready() -> void:
-	_load_database()
+# rareté -> Array de personnages invocables (hors starters)
+var _pools: Dictionary = {}
 
-func _load_database() -> void:
-	if not FileAccess.file_exists(DB_PATH):
-		push_error("GachaSystem: characters_db.json introuvable à %s" % DB_PATH)
-		return
+func _init() -> void:
+	rng.randomize()
+	_load_config()
 
-	var file := FileAccess.open(DB_PATH, FileAccess.READ)
-	var text := file.get_as_text()
-	file.close()
+func _load_config() -> void:
+	var db := DataLoader.load_json(DataLoader.CHARACTERS_DB_PATH)
+	var economy := DataLoader.load_json(DataLoader.ECONOMY_PATH)
+	var gacha: Dictionary = economy.get("gacha", {})
+	var multi: Dictionary = gacha.get("multi_pull", {})
+	var pity: Dictionary = gacha.get("pity", {})
 
-	var parsed = JSON.parse_string(text)
-	if parsed == null:
-		push_error("GachaSystem: JSON invalide dans characters_db.json")
-		return
+	rarities = db.get("rarities", {})
+	cost_single = int(gacha.get("cost_single_eclats", 30))
+	multi_size = int(multi.get("size", 10))
+	multi_discount_pct = int(multi.get("discount_pct", 0))
+	multi_guaranteed_min = str(multi.get("guaranteed_min_rarity", "SR"))
+	pity_sr_threshold = int(pity.get("sr_threshold", 10))
+	pity_ssr_threshold = int(pity.get("ssr_threshold", 50))
 
-	characters = parsed.get("characters", [])
-	rarities = parsed.get("rarities", {})
-	multi_pull_config = parsed.get("multi_pull", {
-		"size": 10, "discount_pct": 10, "guaranteed_min_rarity": "SR"
-	})
+	var total_rate := 0.0
+	for rarity_id: String in RARITY_ORDER:
+		total_rate += get_drop_rate(rarity_id)
+		_pools[rarity_id] = []
+	if not is_equal_approx(total_rate, 1.0):
+		push_error("GachaSystem: les taux de tirage totalisent %.4f au lieu de 1.0" % total_rate)
 
-	print("GachaSystem: %d personnages chargés." % characters.size())
+	for character: Dictionary in db.get("characters", []):
+		if character.get("starter", false):
+			continue
+		var rarity: String = character.get("rarity", "")
+		if _pools.has(rarity):
+			_pools[rarity].append(character)
+	for rarity_id: String in RARITY_ORDER:
+		if _pools[rarity_id].is_empty():
+			push_error("GachaSystem: aucun personnage invocable de rareté %s" % rarity_id)
 
-## Tire une rareté selon les taux définis dans characters_db.json,
-## en appliquant le pity system (SSR prioritaire sur SR).
+func get_drop_rate(rarity: String) -> float:
+	return float(rarities.get(rarity, {}).get("drop_rate", 0.0))
+
+func get_cost(multi: bool) -> int:
+	if not multi:
+		return cost_single
+	return roundi(cost_single * multi_size * (100 - multi_discount_pct) / 100.0)
+
+## Tire une rareté selon les taux annoncés, en appliquant le pity (SSR prioritaire sur SR).
 func _roll_rarity() -> String:
 	pulls_since_sr += 1
 	pulls_since_ssr += 1
 
-	if pulls_since_ssr >= PITY_SSR_THRESHOLD:
-		return "SSR"
-	if pulls_since_sr >= PITY_SR_THRESHOLD:
-		return "SR"
+	if pity_enabled:
+		if pulls_since_ssr >= pity_ssr_threshold:
+			return "SSR"
+		if pulls_since_sr >= pity_sr_threshold:
+			return "SR"
 
-	var roll := randf()
+	var roll := rng.randf()
 	var cumulative := 0.0
-	# Cumul du plus rare au plus commun pour rester cohérent avec les taux annoncés.
-	for rarity_id in ["SSR", "SR", "R"]:
-		if not rarities.has(rarity_id):
-			continue
-		cumulative += float(rarities[rarity_id].get("drop_rate", 0.0))
-		if roll <= cumulative:
+	for rarity_id: String in RARITY_ORDER:
+		cumulative += get_drop_rate(rarity_id)
+		if roll < cumulative:
 			return rarity_id
-
-	return "R" # fallback de sécurité, ne devrait pas arriver si les taux totalisent 1.0
+	return "R" # arrondi flottant : les taux totalisent 1.0
 
 func _reset_pity_for(rarity: String) -> void:
 	if rarity == "SR":
@@ -74,41 +99,40 @@ func _reset_pity_for(rarity: String) -> void:
 		pulls_since_sr = 0
 		pulls_since_ssr = 0
 
-## Renvoie un personnage aléatoire de la rareté donnée (exclut les personnages "starter").
 func _pick_character(rarity: String) -> Dictionary:
-	var pool: Array = characters.filter(func(c): return c.get("rarity") == rarity and not c.get("starter", false))
+	var pool: Array = _pools.get(rarity, [])
 	if pool.is_empty():
-		push_warning("GachaSystem: aucun personnage disponible pour la rareté %s" % rarity)
 		return {}
-	return pool[randi() % pool.size()]
+	return pool[rng.randi_range(0, pool.size() - 1)]
 
 ## Un tirage simple. Retourne {"character": Dictionary, "rarity": String}.
 func single_pull() -> Dictionary:
 	var rarity := _roll_rarity()
 	_reset_pity_for(rarity)
-	var character := _pick_character(rarity)
-	return {"character": character, "rarity": rarity}
+	return {"character": _pick_character(rarity), "rarity": rarity}
 
-## Tirage x10 avec la garantie définie dans characters_db.json (multi_pull.guaranteed_min_rarity).
+## Tirage x10 : garantit au moins un personnage de rang multi_guaranteed_min dans le lot.
 func multi_pull() -> Array:
-	var size: int = multi_pull_config.get("size", 10)
-	var guaranteed_min: String = multi_pull_config.get("guaranteed_min_rarity", "SR")
 	var results: Array = []
-
-	for i in range(size):
+	for i in range(multi_size):
 		results.append(single_pull())
 
-	var rarity_rank := {"R": 0, "SR": 1, "SSR": 2}
-	var has_guaranteed := false
-	for r in results:
-		if rarity_rank.get(r["rarity"], 0) >= rarity_rank.get(guaranteed_min, 1):
-			has_guaranteed = true
-			break
+	var min_rank: int = RARITY_RANK.get(multi_guaranteed_min, 1)
+	for r: Dictionary in results:
+		if RARITY_RANK.get(r["rarity"], 0) >= min_rank:
+			return results
 
-	if not has_guaranteed and not results.is_empty():
-		# Remplace le dernier tirage du lot par une garantie du rang minimum.
-		var character := _pick_character(guaranteed_min)
-		results[results.size() - 1] = {"character": character, "rarity": guaranteed_min}
-		_reset_pity_for(guaranteed_min)
-
+	# Aucun résultat au rang garanti : le dernier tirage du lot est remplacé.
+	results[results.size() - 1] = {
+		"character": _pick_character(multi_guaranteed_min),
+		"rarity": multi_guaranteed_min,
+	}
+	_reset_pity_for(multi_guaranteed_min)
 	return results
+
+func to_dict() -> Dictionary:
+	return {"pulls_since_sr": pulls_since_sr, "pulls_since_ssr": pulls_since_ssr}
+
+func from_dict(data: Dictionary) -> void:
+	pulls_since_sr = int(data.get("pulls_since_sr", 0))
+	pulls_since_ssr = int(data.get("pulls_since_ssr", 0))

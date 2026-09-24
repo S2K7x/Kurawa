@@ -35,14 +35,19 @@ Kurawa/
 ├── GDD.md                  # game design document complet
 ├── project.godot            # à créer en Phase 1
 ├── Data/
-│   └── characters_db.json  # catalogue des guerriers (source de vérité pour le contenu)
+│   ├── characters_db.json  # catalogue des guerriers (source de vérité pour le contenu)
+│   └── economy.json        # équilibrage : coûts, pity, énergie, courbe d'XP, ressources de départ
 ├── Scripts/
+│   ├── DataLoader.gd       # lecture des Data/*.json
 │   ├── GachaSystem.gd      # tirage RNG + pity system
 │   ├── PlayerManager.gd    # ressources joueur, inventaire, sauvegarde locale
 │   ├── StaminaSystem.gd    # jauge d'énergie, recharge automatique, coût par combat
 │   ├── CombatManager.gd    # combat au tour par tour (Vitesse) + IA tactique
 │   └── ProgressionSystem.gd # niveaux + paliers de doublons par personnage
+├── Tests/
+│   └── run_tests.gd        # tests headless Phase 1 (voir « Lancer les tests »)
 ├── Scenes/
+│   ├── GachaTest.tscn      # scène de validation manuelle de la Phase 1
 │   ├── SummonScreen.tscn   # écran d'invocation (Brèche)
 │   ├── InventoryGrid.tscn  # galerie de guerriers
 │   ├── StoryMap.tscn       # carte des chapitres (mode histoire)
@@ -62,6 +67,20 @@ Kurawa/
 4. **Peaufinage & déploiement** — vraies illustrations, audio, contrôles tactiles + souris, exports Mac/Web/iOS.
 
 **Ne pas sauter à la Phase 2 avant que la Phase 1 soit testée et fonctionnelle** (probabilités de tirage vérifiées, sauvegarde fiable).
+
+## Architecture Phase 1
+
+- `GachaSystem`, `StaminaSystem`, `ProgressionSystem` : logique pure (`RefCounted`), sans accès aux monnaies ni au disque
+- `PlayerManager` (Node) : possède ces trois systèmes, les monnaies et l'inventaire, et est le **seul** à lire/écrire la sauvegarde (`user://kurawa_save.json`, écriture atomique, sauvegarde illisible mise de côté en `.corrupt`)
+- L'énergie se recharge sur l'horloge système (continue quand le jeu est fermé)
+
+## Lancer les tests
+
+```bash
+/Applications/Godot.app/Contents/MacOS/Godot --headless --path . -s res://Tests/run_tests.gd
+```
+
+Code de sortie 0 si tout passe. Après ajout/renommage d'un `class_name`, lancer d'abord `--headless --path . --import` pour rafraîchir le cache de classes.
 
 ## Conventions de code
 

@@ -1,0 +1,34 @@
+{
+  "_comment": "Valeurs d'équilibrage de Kurawa (coûts, pity, énergie, niveaux). Toutes sont des valeurs de départ à calibrer en test — voir GDD.md > Économie / Système d'énergie / Progression.",
+  "starting_resources": {
+    "eclats_dimensionnels": 300,
+    "or_de_guilde": 1000
+  },
+  "gacha": {
+    "cost_single_eclats": 30,
+    "multi_pull": {
+      "_comment": "Le tirage x10 doit avoir un avantage sur 10 tirages simples : remise et garantie d'un SR minimum dans le lot.",
+      "size": 10,
+      "discount_pct": 10,
+      "guaranteed_min_rarity": "SR"
+    },
+    "pity": {
+      "_comment": "Nombre de tirages consécutifs sans SR+ (resp. SSR) au bout duquel le tirage suivant est garanti. Le compteur SSR prime sur le compteur SR. Le pity gonfle les taux effectifs au-dessus des taux annoncés : mesuré à R 85.5% / SR 12.4% / SSR 2.1% avec 10/85 (voir Tests/run_tests.gd).",
+      "sr_threshold": 10,
+      "ssr_threshold": 85
+    }
+  },
+  "stamina": {
+    "max": 120,
+    "recharge_seconds": 300,
+    "cost_per_combat": 6
+  },
+  "progression": {
+    "_comment": "XP requise pour passer du niveau N à N+1 = xp_base * xp_growth^(N-1). Chaque niveau au-delà du 1er ajoute stat_growth_per_level_pct % aux stats de base.",
+    "max_level": 40,
+    "xp_base": 100,
+    "xp_growth": 1.1,
+    "stat_growth_per_level_pct": 5,
+    "max_star_duplicate_or": 500
+  }
+}

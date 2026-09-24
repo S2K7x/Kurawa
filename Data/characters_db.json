@@ -7,14 +7,8 @@
     "SSR": { "drop_rate": 0.015, "color": "#f5c518" }
   },
   "card_aspect_ratio": "2:3",
-  "multi_pull": {
-    "_comment": "Le tirage x10 doit avoir un avantage sur 10 tirages simples : remise et/ou garantie SR. Valeurs de départ à ajuster en Phase 1.",
-    "size": 10,
-    "discount_pct": 10,
-    "guaranteed_min_rarity": "SR"
-  },
   "duplicate_system": {
-    "_comment": "5-6 paliers d'étoiles par personnage. Un doublon obtenu au tirage fait monter d'un palier. Bonus de stats à chaque palier, déblocage/amélioration de compétence aux paliers clés (3 et 6). À affiner en Phase 1 avec ProgressionSystem.gd.",
+    "_comment": "5-6 paliers d'étoiles par personnage. Un doublon obtenu au tirage fait monter d'un palier. Bonus de stats à chaque palier, déblocage/amélioration de compétence aux paliers clés (3 et 6). Appliqué par ProgressionSystem.gd ; au-delà de max_stars, un doublon est converti en Or (voir economy.json > progression).",
     "max_stars": 6,
     "tiers": [
       { "star": 1, "stat_bonus_pct": 0, "unlock": null },
