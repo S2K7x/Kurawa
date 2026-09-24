@@ -55,8 +55,18 @@ func _apply() -> void:
 	_frame.line_color = Color(rarity_color, 0.5)
 	_frame.bracket_color = rarity_color
 
-	_art.texture = _art_placeholder(element_color)
-	_initials.text = _initials_of(str(_character.get("name", "")))
+	# Vraie illustration si elle existe, placeholder sinon : les deux cohabitent le temps
+	# que le roster soit illustré (voir CLAUDE.md > Ajouter une illustration).
+	var artwork := DataLoader.character_art(_character)
+	if artwork != null:
+		_art.texture = artwork
+		_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		_initials.hide()
+	else:
+		_art.texture = _art_placeholder(element_color)
+		_art.stretch_mode = TextureRect.STRETCH_SCALE
+		_initials.show()
+		_initials.text = _initials_of(str(_character.get("name", "")))
 	_name_label.text = str(_character.get("name", "???"))
 
 	_rarity_label.text = rarity

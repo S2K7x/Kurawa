@@ -13,6 +13,10 @@ const TUTORIAL_PATH := "res://Data/tutorial.json"
 
 const FALLBACK_COLOR := Color(1, 1, 1)
 
+## Illustrations des guerriers : un fichier par identifiant (kur_001.png, kur_002.webp…).
+const ART_DIR := "res://Assets/Characters"
+const ART_EXTENSIONS: Array[String] = ["png", "webp", "jpg"]
+
 # Le catalogue est relu par plusieurs systèmes et écrans : on le garde en cache.
 static var _characters_db: Dictionary = {}
 static var _enemies_db: Dictionary = {}
@@ -59,6 +63,29 @@ static func element_names() -> Array[String]:
 ## Élément battu par `element` ("" si inconnu) -- cycle Feu > Vent > Foudre > Eau > Feu.
 static func element_beats(element: String) -> String:
 	return str(characters_db().get("elements", {}).get(element, {}).get("beats", ""))
+
+## Fiche d'un guerrier du catalogue ({} si l'identifiant est inconnu — un mob, par exemple).
+static func character(character_id: String) -> Dictionary:
+	for entry: Dictionary in characters_db().get("characters", []):
+		if entry.get("id", "") == character_id:
+			return entry
+	return {}
+
+## Illustration d'un guerrier, par convention `Assets/Characters/<id>.<ext>`, ou le chemin
+## déclaré dans son champ `art` si le fichier vit ailleurs. Retourne null tant qu'aucune
+## illustration n'existe : l'appelant retombe alors sur son placeholder (Phase 4 en cours).
+static func character_art(character: Dictionary) -> Texture2D:
+	var declared := str(character.get("art", ""))
+	if declared != "" and ResourceLoader.exists(declared):
+		return load(declared)
+	var character_id := str(character.get("id", ""))
+	if character_id == "":
+		return null
+	for extension: String in ART_EXTENSIONS:
+		var path := "%s/%s.%s" % [ART_DIR, character_id, extension]
+		if ResourceLoader.exists(path):
+			return load(path)
+	return null
 
 static func element_color(element: String) -> Color:
 	return _color(characters_db().get("elements", {}).get(element, {}).get("color"))

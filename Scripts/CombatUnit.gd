@@ -42,8 +42,18 @@ func _ready() -> void:
 
 func _build() -> void:
 	var color := DataLoader.element_color(unit.element)
-	_portrait.texture = _portrait_texture(color)
-	_initials.text = _initials_of(unit.name)
+	# En combat la vignette est large et courte : l'illustration est recadrée sur le haut
+	# du portrait plutôt que déformée.
+	var artwork := DataLoader.character_art(DataLoader.character(unit.id))
+	if artwork != null:
+		_portrait.texture = artwork
+		_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		_initials.hide()
+	else:
+		_portrait.texture = _portrait_texture(color)
+		_portrait.stretch_mode = TextureRect.STRETCH_SCALE
+		_initials.show()
+		_initials.text = _initials_of(unit.name)
 	_name.text = unit.name
 	_hp_bar.add_theme_stylebox_override("fill", _bar_style(Style.CRIMSON_BRIGHT if not unit.is_ally else Color("#4e9a63")))
 	_atb_bar.add_theme_stylebox_override("fill", _bar_style(Style.GOLD_DIM))

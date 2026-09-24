@@ -105,7 +105,7 @@ par l'auteur : ils définissent la direction visuelle décrite ci-dessous.
 
 **Ne pas sauter à la Phase 2 avant que la Phase 1 soit testée et fonctionnelle** (probabilités de tirage vérifiées, sauvegarde fiable).
 
-**État au 2026-09-24 :** Phases 1, 2 et 3 terminées et couvertes par `Tests/run_tests.gd` (101 vérifications), de l'écran d'accueil au combat gagné avec récompenses, tutoriel de première partie compris. Reste la Phase 4 : illustrations, audio, exports.
+**État au 2026-09-24 :** Phases 1, 2 et 3 terminées et couvertes par `Tests/run_tests.gd` (106 vérifications), de l'écran d'accueil au combat gagné avec récompenses, tutoriel de première partie compris. Reste la Phase 4 : illustrations, audio, exports.
 
 ## Architecture Phases 1-2
 
@@ -186,6 +186,16 @@ Captures PNG de tous les écrans (nécessite un vrai rendu, donc **pas** `--head
 Affiche le taux de victoire de chaque combat pour une équipe type à différents niveaux.
 Lecture : 0% = mur infranchissable · 40-70% = combat tendu · 100% = trop facile. À relancer
 après toute modification de stats, de compétences ou de contenu.
+
+## Ajouter une illustration
+
+Déposer `Assets/Characters/<id>.png` (l'identifiant du guerrier dans `characters_db.json`),
+puis relancer `--headless --path . --import`. La carte l'utilise aussitôt et masque les
+initiales ; un guerrier sans fichier garde son placeholder, donc le roster peut s'illustrer
+un personnage à la fois. Format et cadrage : voir `Assets/Characters/README.md`.
+
+Le chargement passe par `DataLoader.character_art()` — ne pas charger une texture de
+personnage ailleurs, sinon le repli sur le placeholder est perdu.
 
 ## Exporter
 

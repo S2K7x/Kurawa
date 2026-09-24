@@ -245,6 +245,14 @@ func test_data_integrity() -> void:
 		colors_ok = colors_ok and DataLoader.rarity_color(rarity) != DataLoader.FALLBACK_COLOR
 	check(colors_ok, "chaque élément et chaque rareté a une couleur")
 
+	# Illustrations : la convention de nommage et le repli sur le placeholder doivent tenir,
+	# que le roster soit illustré ou non (Phase 4 en cours).
+	check(DataLoader.character_art({}) == null, "sans identifiant, aucune illustration")
+	check(DataLoader.character_art({"id": "guerrier_inexistant"}) == null,
+		"guerrier sans fichier : repli sur le placeholder")
+	check(DataLoader.character_art({"id": "x", "art": "res://icon.svg"}) != null,
+		"le champ `art` permet de pointer une illustration hors convention")
+
 	var seen_ids := {}
 	var names_ok := true
 	var stats_ok := true
