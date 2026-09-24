@@ -3,3 +3,6 @@
 
 # Références visuelles (mockups tiers) : gardées en local, pas redistribuées avec le dépôt
 Design-Style/
+
+# Sorties d'export (régénérables, voir CLAUDE.md > Exporter)
+build/

@@ -200,11 +200,17 @@ Les presets Mac / Web / iOS sont dans `export_presets.cfg` (portrait, `Tests/` e
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path . --export-release "iOS"  build/ios/Kurawa.xcodeproj
 ```
 
-Le build Web est en mono-thread (pas d'isolation cross-origin requise) : il fonctionne
-sur un hébergement statique simple comme itch.io. L'export iOS produit un projet Xcode à
-ouvrir et signer ; l'identifiant de bundle et l'équipe App Store sont à renseigner.
-**Aucun de ces exports n'a encore été lancé** : les templates ne sont pas installés sur
-cette machine.
+**Mac et Web sont vérifiés** (templates 4.7.2 installés) : le `.app` fait 164 Mo et se lance
+sans erreur, le build Web 39 Mo. Le Web est en mono-thread (pas d'isolation cross-origin
+requise) : il tourne sur un hébergement statique simple comme itch.io.
+
+**iOS n'est pas exportable en l'état** : il réclame un *App Store Team ID*, à renseigner dans
+`export_presets.cfg` (`application/app_store_team_id`) depuis un compte développeur Apple.
+L'export produit ensuite un projet Xcode à ouvrir et signer.
+
+L'export arm64 (Mac Apple Silicon, iOS) exige `rendering/textures/vram_compression/import_etc2_astc`
+activé dans `project.godot` — sans ça, l'export échoue sur une erreur de configuration.
+Les sorties vont dans `build/`, ignoré par Git.
 
 ## Conventions de code
 
