@@ -44,6 +44,12 @@ func get_character_stats(character_id: String) -> Dictionary:
 		return {}
 	return progression.compute_stats(get_character_data(character_id).get("stats", {}), inventory[character_id])
 
+## Compétence effective (puissance et cooldown ajustés par les étoiles) d'un personnage possédé.
+func get_character_skill(character_id: String) -> Dictionary:
+	if not inventory.has(character_id):
+		return {}
+	return progression.compute_skill(get_character_data(character_id).get("skill", {}), inventory[character_id].get("stars", 1))
+
 # --- Nouvelle partie / sauvegarde ------------------------------------------------------------
 
 func load_or_new_game() -> void:

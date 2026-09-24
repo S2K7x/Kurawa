@@ -27,6 +27,8 @@ func _initialize() -> void:
 	test_save_roundtrip()
 	test_corrupt_save()
 	test_data_integrity()
+	test_skill_data()
+	test_combat()
 	start_ui_tests()
 
 func _process(_delta: float) -> bool:
@@ -300,3 +302,137 @@ func finish_ui_tests() -> void:
 	_ui_completed = true
 	_main.queue_free()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE_PATH))
+
+# --- Combat (Phase 3) -------------------------------------------------------------------------
+
+## Les compétences sont désormais des données exécutables : tout ce que CombatManager sait
+## lire doit être déclaré au glossaire, et réciproquement.
+func test_skill_data() -> void:
+	print("Compétences")
+	var db := DataLoader.characters_db()
+	var glossary: Dictionary = db.get("skill_glossary", {})
+	var known_targets: Dictionary = glossary.get("targets", {})
+	var known_effects: Dictionary = glossary.get("effects", {})
+	var targets_ok := true
+	var effects_ok := true
+	var cooldowns_ok := true
+	var units: Array = db.get("characters", []).duplicate()
+	for group: String in ["mobs", "bosses"]:
+		units.append_array(DataLoader.enemies_db().get(group, []))
+	for unit: Dictionary in units:
+		var skill: Dictionary = unit.get("skill", {})
+		targets_ok = targets_ok and known_targets.has(skill.get("target", ""))
+		cooldowns_ok = cooldowns_ok and int(skill.get("cooldown", 0)) >= 1
+		for effect: Dictionary in skill.get("effects", []):
+			effects_ok = effects_ok and known_effects.has(effect.get("type", ""))
+	check(targets_ok, "les %d compétences ciblent toutes un mode déclaré au glossaire" % units.size())
+	check(effects_ok, "tous les effets utilisés sont déclarés au glossaire")
+	check(cooldowns_ok, "toute compétence a un cooldown d'au moins 1 tour")
+
+	var prog := ProgressionSystem.new()
+	var base: Dictionary = db["characters"][8]["skill"] # Ryoto Vahn, SSR
+	var maxed := prog.compute_skill(base, 6)
+	check(is_equal_approx(maxed["power"], float(base["power"]) * 1.4),
+		"6 étoiles : puissance de compétence +40%%")
+	check(int(maxed["cooldown"]) == int(base["cooldown"]) - 1, "6 étoiles : un tour de cooldown en moins")
+	check(is_equal_approx(prog.compute_skill(base, 1)["power"], float(base["power"])),
+		"1 étoile : compétence inchangée")
+
+func _combatant(name: String, element: String, atk: int, def_value: int, vit: int, pv: int,
+		is_ally: bool, skill: Dictionary = {}) -> Combatant:
+	var unit := Combatant.new()
+	unit.name = name
+	unit.element = element
+	unit.is_ally = is_ally
+	unit.base_atk = atk
+	unit.base_def = def_value
+	unit.base_vit = vit
+	unit.max_hp = pv
+	unit.hp = pv
+	unit.skill = skill
+	return unit
+
+func test_combat() -> void:
+	print("Combat")
+	var combat := CombatManager.new()
+	check(is_equal_approx(combat.element_multiplier("Feu", "Vent"), 1.5), "Feu bat Vent : ×1.5")
+	check(is_equal_approx(combat.element_multiplier("Vent", "Feu"), 0.75), "Vent contre Feu : ×0.75")
+	check(is_equal_approx(combat.element_multiplier("Feu", "Feu"), 1.0), "même élément : ×1.0")
+
+	# L'ordre de passage suit la Vitesse, pas l'ordre de l'équipe.
+	var order := CombatManager.new()
+	order.rng.seed = 1
+	var slow := _combatant("Lent", "Feu", 50, 50, 40, 500, true)
+	var fast := _combatant("Rapide", "Feu", 50, 50, 200, 500, false)
+	order.start([slow] as Array[Combatant], [fast] as Array[Combatant])
+	check(order.begin_turn() == fast, "le plus rapide agit en premier")
+
+	# Un combat déséquilibré doit se conclure, et du bon côté.
+	var rout := CombatManager.new()
+	rout.rng.seed = 5
+	var champion := _combatant("Champion", "Feu", 300, 200, 150, 5000, true)
+	var minion := _combatant("Sbire", "Vent", 40, 20, 60, 300, false)
+	rout.start([champion] as Array[Combatant], [minion] as Array[Combatant])
+	check(rout.auto_resolve() == CombatManager.Result.VICTORY, "l'équipe largement supérieure gagne")
+	check(rout.turn_count < rout._max_turns, "le combat se termine avant la limite de tours")
+
+	# Brûlure : des dégâts au début de chaque tour de la victime, même sans attaque.
+	var burn := CombatManager.new()
+	burn.rng.seed = 2
+	var torch := _combatant("Torche", "Feu", 100, 50, 100, 400, true)
+	var victim := _combatant("Brûlé", "Feu", 10, 0, 300, 400, false)
+	burn.start([torch] as Array[Combatant], [victim] as Array[Combatant])
+	victim.add_status({"type": "burn", "duration": 3, "value": 0.2, "source_atk": 100})
+	var before := victim.hp
+	burn.begin_turn()
+	check(victim.hp < before, "la brûlure ronge la cible en début de tour (%d -> %d)" % [before, victim.hp])
+
+	# Étourdissement : le tour est perdu.
+	var stun := CombatManager.new()
+	stun.rng.seed = 3
+	var sleeper := _combatant("Étourdi", "Feu", 100, 50, 300, 400, false)
+	var watcher := _combatant("Témoin", "Feu", 100, 50, 10, 400, true)
+	stun.start([watcher] as Array[Combatant], [sleeper] as Array[Combatant])
+	sleeper.add_status({"type": "stun", "duration": 1, "value": 0.0})
+	check(stun.begin_turn() == null, "un combattant étourdi saute son tour")
+
+	# IA tactique : elle vise l'avantage élémentaire plutôt que la première cible venue.
+	var ai := CombatManager.new()
+	ai.rng.seed = 4
+	var attacker := _combatant("Pyromane", "Feu", 120, 50, 100, 900, false)
+	var solid := _combatant("Solide", "Eau", 100, 120, 90, 900, true)
+	var vulnerable := _combatant("Vulnérable", "Vent", 100, 120, 90, 900, true)
+	ai.start([solid, vulnerable] as Array[Combatant], [attacker] as Array[Combatant])
+	check(ai._choose_target(attacker, [solid, vulnerable] as Array[Combatant]) == vulnerable,
+		"l'IA vise la faiblesse élémentaire")
+	var finishable := _combatant("Agonisant", "Eau", 100, 20, 90, 1, true)
+	check(ai._choose_target(attacker, [vulnerable, finishable] as Array[Combatant]) == finishable,
+		"l'IA achève une cible à portée de mort avant de chercher l'avantage")
+
+	# Les adversaires du contenu se montent bien au niveau demandé.
+	var boss := CombatManager.from_enemy("boss_solvire_kaan", 20)
+	var rookie := CombatManager.from_enemy("boss_solvire_kaan", 1)
+	check(boss.max_hp > rookie.max_hp * 1.9, "un boss niveau 20 est bien plus solide qu'au niveau 1")
+	check(boss.is_boss and not CombatManager.from_enemy("mob_eclat_ardent", 1).is_boss,
+		"boss nommé et mob générique sont distingués")
+
+	# Un combat de chapitre complet, avec les vraies données.
+	var story := DataLoader.load_json(DataLoader.STORY_PATH)
+	var battle: Dictionary = story["chapters"][0]["battles"][0]
+	var foes: Array[Combatant] = []
+	for entry: Dictionary in battle["enemies"]:
+		foes.append(CombatManager.from_enemy(entry["id"], int(entry["level"])))
+	var player := _new_player()
+	var team: Array[Combatant] = []
+	for character_id: String in player.get_owned_character_ids():
+		team.append(CombatManager.from_character(player.get_character_data(character_id),
+			player.get_character_stats(character_id), player.get_character_skill(character_id)))
+	var chapter := CombatManager.new()
+	chapter.rng.seed = 9
+	chapter.start(team, foes)
+	var outcome := chapter.auto_resolve()
+	check(outcome != CombatManager.Result.ONGOING, "le premier combat du chapitre 1 se résout")
+	check(chapter.events.size() > 3, "le combat produit un journal d'événements (%d)" % chapter.events.size())
+	print("       chapitre 1, combat 1 : %s en %d tours" % [
+		"victoire" if outcome == CombatManager.Result.VICTORY else "défaite", chapter.turn_count])
+	player.free()

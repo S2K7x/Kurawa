@@ -30,5 +30,21 @@
     "xp_growth": 1.1,
     "stat_growth_per_level_pct": 5,
     "max_star_duplicate_or": 500
+  },
+  "combat": {
+    "_comment": "Règles chiffrées du combat (Phase 3). Dégâts d'une frappe = power × ATK × defense_constant / (defense_constant + DEF_effective) × multiplicateur élémentaire, puis ±variance_pct. L'ordre de passage suit une jauge ATB remplie par la VIT.",
+    "team_size": 3,
+    "element_advantage_multiplier": 1.5,
+    "element_disadvantage_multiplier": 0.75,
+    "defense_constant": 300,
+    "variance_pct": 5,
+    "atb_threshold": 1000,
+    "atb_speed_factor": 1.0,
+    "max_turns": 60
+  },
+  "rewards": {
+    "_comment": "Récompenses de base d'un combat gagné, multipliées par le contenu joué (voir Data/story.json et Data/dungeons.json).",
+    "base_or": 120,
+    "base_xp": 80
   }
 }

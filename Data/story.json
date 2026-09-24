@@ -1,0 +1,172 @@
+{
+  "_comment": "Mode histoire : 4 chapitres courts, narrés en texte simple entre les combats (pas de dialogues mis en scène, voir CLAUDE.md > Mode histoire). Chaque chapitre est nettement plus dur que le précédent : le niveau des ennemis suppose du farm en donjon entre deux chapitres. Les `enemies` renvoient aux identifiants de Data/enemies.json ; `level` fixe leur niveau. Les récompenses de premier passage (`first_clear`) ne tombent qu'une fois.",
+  "rival_guild": "L'Ordre Voracis",
+  "chapters": [
+    {
+      "id": "ch_01",
+      "title": "Les Premiers Éclats",
+      "intro": "Ta guilde tient debout sur trois planches et une promesse. La Brèche, elle, n'a jamais eu besoin de permission : elle s'ouvre au fond de la carrière abandonnée, et ce qui en tombe ne demande pas qui commande ici.\n\nTalia Wren a été la première à en sortir. Elle sera la première à y retourner.",
+      "outro": "Les éclats se dispersent. Pas de bannière plantée, pas de foule : juste une guilde qui tient encore la carrière au coucher du soleil. C'est un début.",
+      "battles": [
+        {
+          "name": "La carrière",
+          "enemies": [
+            {
+              "id": "mob_eclat_ardent",
+              "level": 1
+            },
+            {
+              "id": "mob_souffle_lacere",
+              "level": 1
+            }
+          ]
+        },
+        {
+          "name": "Le puits de brèche",
+          "enemies": [
+            {
+              "id": "mob_arc_crepitant",
+              "level": 2
+            },
+            {
+              "id": "mob_eclat_ardent",
+              "level": 2
+            },
+            {
+              "id": "mob_ressac_spectral",
+              "level": 2
+            }
+          ]
+        }
+      ],
+      "first_clear": {
+        "eclats_dimensionnels": 90,
+        "or_de_guilde": 400
+      }
+    },
+    {
+      "id": "ch_02",
+      "title": "L'Ombre de Voracis",
+      "intro": "Ils sont arrivés trois jours plus tard, en ordre, sans frapper. L'Ordre Voracis ne réclame pas la carrière : il l'inventorie, comme on compte un butin déjà rangé.\n\nLeur éclaireur s'appelle Vashk Orren. Il te laisse le choix entre céder la Brèche et être rayé du registre des guildes. Les deux options lui vont.",
+      "outro": "Orren repart en boitant, ce qui, pour l'Ordre, équivaut à une humiliation publique. Il n'était qu'un éclaireur — et il le sait mieux que toi.",
+      "battles": [
+        {
+          "name": "L'avant-garde",
+          "enemies": [
+            {
+              "id": "mob_veilleur_brise",
+              "level": 5
+            },
+            {
+              "id": "mob_arc_crepitant",
+              "level": 6
+            }
+          ]
+        },
+        {
+          "name": "Vashk Orren, Éclaireur de l'Ordre",
+          "boss": true,
+          "enemies": [
+            {
+              "id": "boss_vashk_orren",
+              "level": 6
+            },
+            {
+              "id": "mob_arc_crepitant",
+              "level": 5
+            }
+          ]
+        }
+      ],
+      "first_clear": {
+        "eclats_dimensionnels": 150,
+        "or_de_guilde": 900
+      }
+    },
+    {
+      "id": "ch_03",
+      "title": "La Faille de Kaelin",
+      "intro": "Si l'Ordre veut la carrière, c'est qu'il y a mieux ailleurs. La faille de Kaelin s'ouvre sur les hauts-plateaux, instable, mal née, et personne n'y a planté de bannière.\n\nPersonne n'y a survécu assez longtemps pour essayer.",
+      "outro": "La faille tient. Tes guerriers tiennent. Dans la vallée, en contrebas, les feux de camp de l'Ordre s'allument un par un — ils montent, eux aussi.",
+      "battles": [
+        {
+          "name": "Le versant fracturé",
+          "enemies": [
+            {
+              "id": "mob_souffle_lacere",
+              "level": 11
+            },
+            {
+              "id": "mob_souffle_lacere",
+              "level": 11
+            },
+            {
+              "id": "mob_veilleur_brise",
+              "level": 12
+            }
+          ]
+        },
+        {
+          "name": "Le gardien de la faille",
+          "enemies": [
+            {
+              "id": "mob_colosse_faille",
+              "level": 14
+            },
+            {
+              "id": "mob_ressac_spectral",
+              "level": 12
+            }
+          ]
+        }
+      ],
+      "first_clear": {
+        "eclats_dimensionnels": 210,
+        "or_de_guilde": 1600
+      }
+    },
+    {
+      "id": "ch_04",
+      "title": "Le Serment Brisé",
+      "intro": "Solvire Kaan monte elle-même. Championne de l'Ordre, elle n'envoie pas d'éclaireur pour une guilde qui a tenu deux brèches.\n\nSon serment tient en une phrase, et l'Ordre entier le répète : ce que la Brèche donne, on le prend en entier, tout de suite. Le tien est plus lent à dire. On va voir lequel casse.",
+      "outro": "Kaan s'agenouille dans la cendre de son propre incendie. Elle ne concède rien : elle reviendra avec l'Ordre derrière elle.\n\nMais ce soir, la Brèche est à ta guilde — et tout le monde sur les hauts-plateaux a vu qui la tenait.",
+      "battles": [
+        {
+          "name": "La garde de cendres",
+          "enemies": [
+            {
+              "id": "mob_eclat_ardent",
+              "level": 18
+            },
+            {
+              "id": "mob_veilleur_brise",
+              "level": 19
+            },
+            {
+              "id": "mob_colosse_faille",
+              "level": 18
+            }
+          ]
+        },
+        {
+          "name": "Solvire Kaan, Championne de l'Ordre",
+          "boss": true,
+          "enemies": [
+            {
+              "id": "boss_solvire_kaan",
+              "level": 20
+            },
+            {
+              "id": "mob_eclat_ardent",
+              "level": 17
+            }
+          ]
+        }
+      ],
+      "first_clear": {
+        "eclats_dimensionnels": 400,
+        "or_de_guilde": 3000
+      }
+    }
+  ]
+}

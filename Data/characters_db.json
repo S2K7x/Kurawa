@@ -51,7 +51,8 @@
       {
         "star": 3,
         "stat_bonus_pct": 16,
-        "unlock": "Amélioration de la compétence spéciale (effet renforcé ou coût réduit)"
+        "unlock": "Amélioration de la compétence spéciale (effet renforcé ou coût réduit)",
+        "skill_power_bonus_pct": 20
       },
       {
         "star": 4,
@@ -66,7 +67,9 @@
       {
         "star": 6,
         "stat_bonus_pct": 52,
-        "unlock": "Version ultime de la compétence spéciale"
+        "unlock": "Version ultime de la compétence spéciale",
+        "skill_power_bonus_pct": 40,
+        "skill_cooldown_reduction": 1
       }
     ]
   },
@@ -85,7 +88,20 @@
       },
       "skill": {
         "name": "Poing Cendré",
-        "description": "Frappe l'ennemi le plus faible et inflige une brûlure légère sur 2 tours."
+        "description": "Frappe l'ennemi le plus faible et inflige une brûlure légère sur 2 tours.",
+        "target": "enemy_lowest_hp",
+        "power": 1.6,
+        "hits": 1,
+        "cooldown": 3,
+        "effects": [
+          {
+            "type": "burn",
+            "target": "target",
+            "chance": 1.0,
+            "duration": 2,
+            "value": 0.12
+          }
+        ]
       }
     },
     {
@@ -102,7 +118,20 @@
       },
       "skill": {
         "name": "Voile de Brume",
-        "description": "Réduit les dégâts subis par l'équipe de 15% pendant 1 tour."
+        "description": "Réduit les dégâts subis par l'équipe de 15% pendant 1 tour.",
+        "target": "ally_all",
+        "power": 0.0,
+        "hits": 0,
+        "cooldown": 3,
+        "effects": [
+          {
+            "type": "damage_reduction",
+            "target": "ally_all",
+            "chance": 1.0,
+            "duration": 1,
+            "value": 0.15
+          }
+        ]
       }
     },
     {
@@ -119,7 +148,19 @@
       },
       "skill": {
         "name": "Décharge Franche",
-        "description": "Attaque rapide qui a une chance d'étourdir la cible 1 tour."
+        "description": "Attaque rapide qui a une chance d'étourdir la cible 1 tour.",
+        "target": "enemy_single",
+        "power": 1.5,
+        "hits": 1,
+        "cooldown": 3,
+        "effects": [
+          {
+            "type": "stun",
+            "target": "target",
+            "chance": 0.3,
+            "duration": 1
+          }
+        ]
       }
     },
     {
@@ -136,7 +177,12 @@
       },
       "skill": {
         "name": "Lame de Courant",
-        "description": "Enchaîne deux frappes rapides sur la même cible."
+        "description": "Enchaîne deux frappes rapides sur la même cible.",
+        "target": "enemy_single",
+        "power": 0.95,
+        "hits": 2,
+        "cooldown": 3,
+        "effects": []
       }
     },
     {
@@ -153,7 +199,21 @@
       },
       "skill": {
         "name": "Embrasement du Forgeron",
-        "description": "Enflamme son arme : les 3 prochaines attaques infligent des dégâts bonus et propagent la brûlure."
+        "description": "Enflamme son arme : les 3 prochaines attaques infligent des dégâts bonus et propagent la brûlure.",
+        "target": "self",
+        "power": 0.0,
+        "hits": 0,
+        "cooldown": 4,
+        "effects": [
+          {
+            "type": "empower",
+            "target": "self",
+            "chance": 1.0,
+            "duration": 3,
+            "value": 0.3,
+            "rider": "burn"
+          }
+        ]
       }
     },
     {
@@ -170,7 +230,19 @@
       },
       "skill": {
         "name": "Marée Noire",
-        "description": "Inflige des dégâts à toute l'équipe adverse et soigne son équipe de 10% des dégâts infligés."
+        "description": "Inflige des dégâts à toute l'équipe adverse et soigne son équipe de 10% des dégâts infligés.",
+        "target": "enemy_all",
+        "power": 1.15,
+        "hits": 1,
+        "cooldown": 4,
+        "effects": [
+          {
+            "type": "lifesteal",
+            "target": "ally_all",
+            "chance": 1.0,
+            "value": 0.1
+          }
+        ]
       }
     },
     {
@@ -187,7 +259,19 @@
       },
       "skill": {
         "name": "Éclair Fourchu",
-        "description": "Frappe deux cibles aléatoires avec une chance élevée d'étourdissement."
+        "description": "Frappe deux cibles aléatoires avec une chance élevée d'étourdissement.",
+        "target": "enemy_random_2",
+        "power": 1.25,
+        "hits": 1,
+        "cooldown": 4,
+        "effects": [
+          {
+            "type": "stun",
+            "target": "target",
+            "chance": 0.5,
+            "duration": 1
+          }
+        ]
       }
     },
     {
@@ -204,7 +288,26 @@
       },
       "skill": {
         "name": "Pas du Zéphyr",
-        "description": "Esquive garantie la prochaine attaque et augmente sa Vitesse pour 2 tours."
+        "description": "Esquive garantie la prochaine attaque et augmente sa Vitesse pour 2 tours.",
+        "target": "self",
+        "power": 0.0,
+        "hits": 0,
+        "cooldown": 4,
+        "effects": [
+          {
+            "type": "dodge",
+            "target": "self",
+            "chance": 1.0,
+            "charges": 1
+          },
+          {
+            "type": "speed_up",
+            "target": "self",
+            "chance": 1.0,
+            "duration": 2,
+            "value": 0.35
+          }
+        ]
       }
     },
     {
@@ -221,7 +324,25 @@
       },
       "skill": {
         "name": "Rugissement du Pyraxis",
-        "description": "Explosion massive sur toute l'équipe adverse ; brûlure garantie et dégâts bonus si la cible est déjà brûlée."
+        "description": "Explosion massive sur toute l'équipe adverse ; brûlure garantie et dégâts bonus si la cible est déjà brûlée.",
+        "target": "enemy_all",
+        "power": 1.7,
+        "hits": 1,
+        "cooldown": 5,
+        "effects": [
+          {
+            "type": "burn",
+            "target": "target",
+            "chance": 1.0,
+            "duration": 2,
+            "value": 0.15
+          },
+          {
+            "type": "bonus_vs_burning",
+            "target": "target",
+            "value": 0.35
+          }
+        ]
       }
     },
     {
@@ -238,7 +359,26 @@
       },
       "skill": {
         "name": "Étreinte des Abysses",
-        "description": "Immobilise une cible pendant 1 tour et soigne l'équipe entière chaque tour où elle reste immobilisée."
+        "description": "Immobilise une cible pendant 1 tour et soigne l'équipe entière chaque tour où elle reste immobilisée.",
+        "target": "enemy_single",
+        "power": 1.4,
+        "hits": 1,
+        "cooldown": 5,
+        "effects": [
+          {
+            "type": "stun",
+            "target": "target",
+            "chance": 1.0,
+            "duration": 1
+          },
+          {
+            "type": "heal_per_turn",
+            "target": "ally_all",
+            "chance": 1.0,
+            "duration": 1,
+            "value": 0.6
+          }
+        ]
       }
     },
     {
@@ -255,7 +395,24 @@
       },
       "skill": {
         "name": "Tempête de Skarn",
-        "description": "Agit deux fois ce tour ; la seconde action inflige des dégâts amplifiés si la cible est sous 50% PV."
+        "description": "Agit deux fois ce tour ; la seconde action inflige des dégâts amplifiés si la cible est sous 50% PV.",
+        "target": "enemy_single",
+        "power": 1.5,
+        "hits": 1,
+        "cooldown": 5,
+        "effects": [
+          {
+            "type": "bonus_vs_wounded",
+            "target": "target",
+            "value": 0.5,
+            "threshold": 0.5
+          },
+          {
+            "type": "extra_turn",
+            "target": "self",
+            "chance": 1.0
+          }
+        ]
       }
     },
     {
@@ -272,7 +429,24 @@
       },
       "skill": {
         "name": "Surcharge Totale",
-        "description": "Charge 1 tour puis libère une attaque sur toute l'équipe adverse, ignorant une partie de la Défense."
+        "description": "Charge 1 tour puis libère une attaque sur toute l'équipe adverse, ignorant une partie de la Défense.",
+        "target": "enemy_all",
+        "power": 2.1,
+        "hits": 1,
+        "cooldown": 5,
+        "effects": [
+          {
+            "type": "charge",
+            "target": "self",
+            "chance": 1.0,
+            "duration": 1
+          },
+          {
+            "type": "defense_ignore",
+            "target": "target",
+            "value": 0.4
+          }
+        ]
       }
     },
     {
@@ -291,8 +465,60 @@
       },
       "skill": {
         "name": "Serment de la Guilde",
-        "description": "Augmente l'ATK de toute l'équipe pendant 2 tours ; effet renforcé si elle est la dernière survivante de l'équipe."
+        "description": "Augmente l'ATK de toute l'équipe pendant 2 tours ; effet renforcé si elle est la dernière survivante de l'équipe.",
+        "target": "ally_all",
+        "power": 0.0,
+        "hits": 0,
+        "cooldown": 4,
+        "effects": [
+          {
+            "type": "atk_up",
+            "target": "ally_all",
+            "chance": 1.0,
+            "duration": 2,
+            "value": 0.25
+          },
+          {
+            "type": "last_stand_bonus",
+            "target": "self",
+            "value": 0.25
+          }
+        ]
       }
     }
-  ]
+  ],
+  "basic_attack": {
+    "_comment": "Attaque de base commune à tous les guerriers : pas de cooldown, pas d'effet.",
+    "power": 1.0,
+    "hits": 1,
+    "target": "enemy_single"
+  },
+  "skill_glossary": {
+    "_comment": "Vocabulaire des compétences, contrat entre les données et CombatManager.gd (Phase 3). Toute compétence se lit : `power` × ATK par frappe, `hits` frappes, sur `target`, puis application des `effects`. `power: 0` = compétence sans dégâts.",
+    "targets": {
+      "enemy_single": "l'ennemi choisi par l'IA / le joueur",
+      "enemy_lowest_hp": "l'ennemi avec le moins de PV restants",
+      "enemy_random_2": "deux ennemis tirés au hasard",
+      "enemy_all": "toute l'équipe adverse",
+      "ally_all": "toute l'équipe du lanceur",
+      "self": "le lanceur seul"
+    },
+    "effects": {
+      "burn": "dégâts par tour = value × ATK du lanceur, pendant duration tours",
+      "stun": "la cible saute ses tours pendant duration (chance = probabilité)",
+      "damage_reduction": "dégâts subis réduits de value pendant duration",
+      "atk_up": "ATK augmentée de value pendant duration",
+      "speed_up": "VIT augmentée de value pendant duration",
+      "lifesteal": "soigne la cible de l'effet de value × dégâts infligés par la compétence",
+      "heal_per_turn": "soigne value × ATK du lanceur par tour pendant duration",
+      "dodge": "esquive garantie des `charges` prochaines attaques subies",
+      "empower": "les `duration` prochaines attaques de base gagnent value de dégâts et appliquent `rider`",
+      "extra_turn": "le lanceur rejoue immédiatement après cette action",
+      "charge": "l'effet de la compétence se déclenche duration tour(s) plus tard",
+      "defense_ignore": "ignore value de la DEF de la cible",
+      "bonus_vs_burning": "dégâts × (1 + value) si la cible brûle déjà",
+      "bonus_vs_wounded": "dégâts × (1 + value) si la cible est sous threshold de ses PV max",
+      "last_stand_bonus": "effets de la compétence renforcés de value si le lanceur est le dernier survivant"
+    }
+  }
 }

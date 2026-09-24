@@ -6,11 +6,15 @@ class_name DataLoader
 
 const CHARACTERS_DB_PATH := "res://Data/characters_db.json"
 const ECONOMY_PATH := "res://Data/economy.json"
+const ENEMIES_PATH := "res://Data/enemies.json"
+const STORY_PATH := "res://Data/story.json"
+const DUNGEONS_PATH := "res://Data/dungeons.json"
 
 const FALLBACK_COLOR := Color(1, 1, 1)
 
 # Le catalogue est relu par plusieurs systèmes et écrans : on le garde en cache.
 static var _characters_db: Dictionary = {}
+static var _enemies_db: Dictionary = {}
 
 ## Renvoie le contenu JSON (objet racine) du fichier, ou un Dictionary vide en cas d'erreur.
 static func load_json(path: String) -> Dictionary:
@@ -27,6 +31,21 @@ static func characters_db() -> Dictionary:
 	if _characters_db.is_empty():
 		_characters_db = load_json(CHARACTERS_DB_PATH)
 	return _characters_db
+
+static func enemies_db() -> Dictionary:
+	if _enemies_db.is_empty():
+		_enemies_db = load_json(ENEMIES_PATH)
+	return _enemies_db
+
+## Fiche d'un adversaire par identifiant, qu'il soit mob générique ou boss nommé.
+static func enemy(enemy_id: String) -> Dictionary:
+	var db := enemies_db()
+	for group: String in ["mobs", "bosses"]:
+		for entry: Dictionary in db.get(group, []):
+			if entry.get("id", "") == enemy_id:
+				return entry
+	push_error("DataLoader: adversaire inconnu : %s" % enemy_id)
+	return {}
 
 ## Éléments jouables, dans l'ordre du cycle de forces (les clés de service commencent par "_").
 static func element_names() -> Array[String]:

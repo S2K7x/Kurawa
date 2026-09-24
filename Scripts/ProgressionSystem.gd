@@ -73,6 +73,31 @@ func get_unlocks(stars: int) -> Array[String]:
 			unlocks.append(str(tier["unlock"]))
 	return unlocks
 
+## Bonus de puissance de compétence au palier atteint, en %. Les paliers ne se cumulent pas :
+## on prend la meilleure valeur débloquée (20% à 3★, 40% à 6★).
+func get_skill_power_bonus_pct(stars: int) -> float:
+	var best := 0.0
+	for tier: Dictionary in tiers:
+		if int(tier.get("star", 0)) <= stars:
+			best = maxf(best, float(tier.get("skill_power_bonus_pct", 0.0)))
+	return best
+
+## Tours de cooldown retirés à la compétence au palier atteint.
+func get_skill_cooldown_reduction(stars: int) -> int:
+	var best := 0
+	for tier: Dictionary in tiers:
+		if int(tier.get("star", 0)) <= stars:
+			best = maxi(best, int(tier.get("skill_cooldown_reduction", 0)))
+	return best
+
+## Compétence effective d'un guerrier à `stars` étoiles : puissance et cooldown ajustés
+## par les paliers de doublons (le reste de la fiche est inchangé).
+func compute_skill(base_skill: Dictionary, stars: int) -> Dictionary:
+	var skill := base_skill.duplicate(true)
+	skill["power"] = float(base_skill.get("power", 0.0)) * (1.0 + get_skill_power_bonus_pct(stars) / 100.0)
+	skill["cooldown"] = maxi(int(base_skill.get("cooldown", 0)) - get_skill_cooldown_reduction(stars), 1)
+	return skill
+
 ## Stats effectives = base × bonus de niveau × bonus d'étoiles.
 func compute_stats(base_stats: Dictionary, entry: Dictionary) -> Dictionary:
 	var level: int = entry.get("level", 1)

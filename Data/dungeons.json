@@ -1,0 +1,83 @@
+{
+  "_comment": "Donjons rejouables à l'infini, le farm entre deux chapitres (voir GDD.md > Structure du contenu PvE). Uniquement des mobs génériques : les guerriers nommés de l'Ordre Voracis restent réservés aux fins de chapitre. `or_multiplier` et `xp_multiplier` s'appliquent aux récompenses de base (economy.json > rewards). Les donjons élémentaires servent à tester le triangle des forces : les quatre éléments sont représentés dès le lancement.",
+  "dungeons": [
+    {
+      "id": "dj_or",
+      "name": "Les Gouffres à Butin",
+      "kind": "or",
+      "description": "Des éclats gorgés de métal de Brèche. Peu dangereux, très rentables.",
+      "or_multiplier": 2.5,
+      "xp_multiplier": 0.5,
+      "tiers": [
+        { "level": 3, "enemies": ["mob_eclat_ardent", "mob_ressac_spectral"] },
+        { "level": 9, "enemies": ["mob_colosse_faille", "mob_ressac_spectral", "mob_eclat_ardent"] },
+        { "level": 16, "enemies": ["mob_colosse_faille", "mob_colosse_faille", "mob_veilleur_brise"] }
+      ]
+    },
+    {
+      "id": "dj_xp",
+      "name": "Le Champ d'Entraînement",
+      "kind": "xp",
+      "description": "Des éclats faibles mais innombrables : de quoi aguerrir une équipe entière.",
+      "or_multiplier": 0.5,
+      "xp_multiplier": 2.5,
+      "tiers": [
+        { "level": 3, "enemies": ["mob_souffle_lacere", "mob_arc_crepitant"] },
+        { "level": 9, "enemies": ["mob_souffle_lacere", "mob_arc_crepitant", "mob_eclat_ardent"] },
+        { "level": 16, "enemies": ["mob_veilleur_brise", "mob_souffle_lacere", "mob_arc_crepitant"] }
+      ]
+    },
+    {
+      "id": "dj_feu",
+      "name": "La Forge Éteinte",
+      "kind": "element",
+      "element": "Feu",
+      "description": "Tout y brûle. Amène de l'Eau.",
+      "or_multiplier": 1.2,
+      "xp_multiplier": 1.2,
+      "tiers": [
+        { "level": 6, "enemies": ["mob_eclat_ardent", "mob_eclat_ardent"] },
+        { "level": 13, "enemies": ["mob_eclat_ardent", "mob_eclat_ardent", "mob_eclat_ardent"] }
+      ]
+    },
+    {
+      "id": "dj_eau",
+      "name": "Les Ressacs Noirs",
+      "kind": "element",
+      "element": "Eau",
+      "description": "Lent, lourd, patient. Amène de la Foudre.",
+      "or_multiplier": 1.2,
+      "xp_multiplier": 1.2,
+      "tiers": [
+        { "level": 6, "enemies": ["mob_ressac_spectral", "mob_ressac_spectral"] },
+        { "level": 13, "enemies": ["mob_colosse_faille", "mob_ressac_spectral", "mob_ressac_spectral"] }
+      ]
+    },
+    {
+      "id": "dj_foudre",
+      "name": "Le Ciel Fêlé",
+      "kind": "element",
+      "element": "Foudre",
+      "description": "Frappe avant tout le monde. Amène du Vent.",
+      "or_multiplier": 1.2,
+      "xp_multiplier": 1.2,
+      "tiers": [
+        { "level": 6, "enemies": ["mob_arc_crepitant", "mob_arc_crepitant"] },
+        { "level": 13, "enemies": ["mob_veilleur_brise", "mob_arc_crepitant", "mob_arc_crepitant"] }
+      ]
+    },
+    {
+      "id": "dj_vent",
+      "name": "Les Hauts-Plateaux",
+      "kind": "element",
+      "element": "Vent",
+      "description": "Insaisissable et coupant. Amène du Feu.",
+      "or_multiplier": 1.2,
+      "xp_multiplier": 1.2,
+      "tiers": [
+        { "level": 6, "enemies": ["mob_souffle_lacere", "mob_souffle_lacere"] },
+        { "level": 13, "enemies": ["mob_souffle_lacere", "mob_souffle_lacere", "mob_veilleur_brise"] }
+      ]
+    }
+  ]
+}
