@@ -165,6 +165,9 @@ Voir `CLAUDE.md` pour la structure des dossiers.
 7. Construire l'interface de la Phase 2 : coquille de navigation, écran d'invocation avec révélation par rareté, galerie filtrable et fiche de guerrier. ✅ (`Scenes/Main.tscn`, placeholders : dégradé de l'élément + initiales jusqu'à la Phase 4)
 8. Esquisser les 2-3 premiers chapitres du mode histoire pour poser le ton avant de coder l'IA tactique des donjons.
 9. Phase 3 — moteur de combat : `CombatManager.gd` (ATB par Vitesse, multiplicateurs élémentaires, IA tactique qui achève les cibles à portée et exploite les faiblesses), compétences formalisées en données exécutables, `Data/enemies.json` / `story.json` / `dungeons.json`. ✅
-10. Phase 3 — écrans : sélection d'équipe (3 guerriers), CombatArena, StoryMap, DungeonSelect, écran de récompenses.
+10. Phase 3 — écrans : sélection d'équipe (3 guerriers), CombatArena (manuel + bouton auto), StoryScreen, DungeonScreen, écran de récompenses. ✅
+11. Phase 4 : illustrations finales, audio, exports Mac/Web/iOS.
+
+**Coups critiques (ajout Phase 3) :** 15% de chance, ×1.5 dégâts. Sans eux, deux équipes de force voisine donnaient toujours le même vainqueur (taux de victoire mesurés soit 0%, soit 100%).
 
 **Équilibrage mesuré (équipe type starter + 2 R, 1★, `Tests/balance_report.gd`) :** chapitre 1 franchissable dès le niveau 1 ; boss du chapitre 2 vers le niveau 10 ; chapitre 3 vers le niveau 10 ; chapitre 4 vers le niveau 20, et sa championne vers le niveau 30. La courbe force donc bien le farm en donjon entre les chapitres, comme voulu.

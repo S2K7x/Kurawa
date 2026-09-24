@@ -94,14 +94,32 @@ layout_mode = 2
 size_flags_horizontal = 3
 toggle_mode = true
 button_pressed = true
-text = "LA BRÈCHE"
+theme_override_font_sizes/font_size = 17
+text = "BRÈCHE"
 
 [node name="GuildNav" type="Button" parent="Layout/BottomNav/HBox"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 toggle_mode = true
-text = "LA GUILDE"
+theme_override_font_sizes/font_size = 17
+text = "GUILDE"
+
+[node name="StoryNav" type="Button" parent="Layout/BottomNav/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+theme_override_font_sizes/font_size = 17
+text = "HISTOIRE"
+
+[node name="DungeonNav" type="Button" parent="Layout/BottomNav/HBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+toggle_mode = true
+theme_override_font_sizes/font_size = 17
+text = "DONJONS"
 
 [node name="RefreshTimer" type="Timer" parent="."]
 unique_name_in_owner = true

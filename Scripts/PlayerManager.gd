@@ -7,7 +7,7 @@ class_name PlayerManager
 
 signal state_changed
 
-const SAVE_VERSION := 1
+const SAVE_VERSION := 2
 const DEFAULT_SAVE_PATH := "user://kurawa_save.json"
 
 var save_path: String = DEFAULT_SAVE_PATH
@@ -17,6 +17,13 @@ var or_de_guilde: int = 0
 
 # inventory[character_id] = {"level": int, "stars": int, "xp": int}
 var inventory: Dictionary = {}
+
+# Avancement du mode histoire : story_progress[chapter_id] = nombre de combats réussis.
+var story_progress: Dictionary = {}
+# Chapitres dont la récompense de premier passage a déjà été versée.
+var claimed_first_clear: Dictionary = {}
+# Dernière équipe envoyée au combat, proposée par défaut à la sélection suivante.
+var last_team: Array = []
 
 var gacha := GachaSystem.new()
 var stamina := StaminaSystem.new()
@@ -61,6 +68,9 @@ func new_game() -> void:
 	eclats_dimensionnels = int(start.get("eclats_dimensionnels", 0))
 	or_de_guilde = int(start.get("or_de_guilde", 0))
 	inventory = {}
+	story_progress = {}
+	claimed_first_clear = {}
+	last_team = []
 	gacha.from_dict({})
 	stamina.reset_full()
 	# Personnage de départ garanti, lié à l'histoire (voir GDD.md > Personnage de départ).
@@ -82,6 +92,9 @@ func save_game() -> bool:
 		"eclats_dimensionnels": eclats_dimensionnels,
 		"or_de_guilde": or_de_guilde,
 		"inventory": inventory,
+		"story_progress": story_progress,
+		"claimed_first_clear": claimed_first_clear,
+		"last_team": last_team,
 		"gacha": gacha.to_dict(),
 		"stamina": stamina.to_dict(),
 	}
@@ -124,6 +137,14 @@ func load_game() -> bool:
 			"stars": int(entry.get("stars", 1)),
 			"xp": int(entry.get("xp", 0)),
 		}
+	story_progress = {}
+	for chapter_id: String in data.get("story_progress", {}):
+		story_progress[chapter_id] = int(data["story_progress"][chapter_id])
+	claimed_first_clear = data.get("claimed_first_clear", {})
+	last_team = []
+	for character_id: String in data.get("last_team", []):
+		if inventory.has(character_id):
+			last_team.append(character_id)
 	gacha.from_dict(data.get("gacha", {}))
 	stamina.from_dict(data.get("stamina", {}))
 	state_changed.emit()
@@ -190,6 +211,61 @@ func add_character_xp(character_id: String, amount: int) -> int:
 	if not inventory.has(character_id):
 		return 0
 	return progression.add_xp(inventory[character_id], amount)
+
+# --- Mode histoire & récompenses ---------------------------------------------------------------
+
+## Nombre de combats déjà réussis dans un chapitre.
+func battles_cleared(chapter_id: String) -> int:
+	return int(story_progress.get(chapter_id, 0))
+
+func is_chapter_cleared(chapter_id: String) -> bool:
+	var chapter := ContentLibrary.chapter(chapter_id)
+	return battles_cleared(chapter_id) >= chapter.get("battles", []).size()
+
+## Un chapitre s'ouvre quand le précédent est bouclé ; le premier est toujours jouable.
+func is_chapter_unlocked(chapter_id: String) -> bool:
+	var all_chapters := ContentLibrary.chapters()
+	for index in range(all_chapters.size()):
+		if all_chapters[index].get("id", "") == chapter_id:
+			return index == 0 or is_chapter_cleared(str(all_chapters[index - 1].get("id", "")))
+	return false
+
+## Un combat de chapitre est jouable dès que le précédent est réussi (rejouable ensuite).
+func is_battle_unlocked(chapter_id: String, battle_index: int) -> bool:
+	return is_chapter_unlocked(chapter_id) and battle_index <= battles_cleared(chapter_id)
+
+## Enregistre une victoire : XP à l'équipe engagée, Or, avancement du chapitre et
+## récompense de premier passage s'il vient d'être bouclé. Retourne le détail pour l'écran
+## de fin de combat. Ne consomme pas d'énergie : c'est start_combat() qui l'a déjà fait.
+func grant_victory(team_ids: Array, rewards: Dictionary, chapter_id: String = "", battle_index: int = -1) -> Dictionary:
+	var gained_or := int(rewards.get("or", 0))
+	var gained_xp := int(rewards.get("xp", 0))
+	add_or(gained_or)
+	var level_ups := {}
+	for character_id: String in team_ids:
+		var levels := add_character_xp(character_id, gained_xp)
+		if levels > 0:
+			level_ups[character_id] = levels
+
+	var first_clear := {}
+	if chapter_id != "" and battle_index >= 0:
+		story_progress[chapter_id] = maxi(battles_cleared(chapter_id), battle_index + 1)
+		if is_chapter_cleared(chapter_id) and not claimed_first_clear.has(chapter_id):
+			claimed_first_clear[chapter_id] = true
+			first_clear = ContentLibrary.chapter(chapter_id).get("first_clear", {})
+			add_eclats(int(first_clear.get("eclats_dimensionnels", 0)))
+			add_or(int(first_clear.get("or_de_guilde", 0)))
+
+	last_team = team_ids.duplicate()
+	save_game()
+	state_changed.emit()
+	return {"or": gained_or, "xp": gained_xp, "level_ups": level_ups, "first_clear": first_clear}
+
+## Défaite : rien n'est gagné, mais l'équipe engagée est mémorisée pour la prochaine tentative.
+func record_defeat(team_ids: Array) -> void:
+	last_team = team_ids.duplicate()
+	save_game()
+	state_changed.emit()
 
 # --- Énergie ---------------------------------------------------------------------------------
 

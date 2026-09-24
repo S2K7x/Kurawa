@@ -30,6 +30,8 @@ var _variance: float = 0.05
 var _advantage: float = 1.5
 var _disadvantage: float = 0.75
 var _max_turns: int = 60
+var _crit_chance: float = 0.15
+var _crit_multiplier: float = 1.5
 
 func _init() -> void:
 	rng.randomize()
@@ -41,6 +43,8 @@ func _init() -> void:
 	_advantage = float(config.get("element_advantage_multiplier", _advantage))
 	_disadvantage = float(config.get("element_disadvantage_multiplier", _disadvantage))
 	_max_turns = int(config.get("max_turns", _max_turns))
+	_crit_chance = float(config.get("crit_chance", _crit_chance))
+	_crit_multiplier = float(config.get("crit_multiplier", _crit_multiplier))
 
 # --- Fabrication des combattants ---------------------------------------------------------------
 
@@ -271,8 +275,13 @@ func _strike(actor: Combatant, victim: Combatant, power: float, defense_ignore: 
 	var mitigation := _defense_constant / (_defense_constant + defense)
 	var raw := actor.atk() * power * mitigation * element_multiplier(actor.element, victim.element)
 	raw *= 1.0 - victim.damage_reduction()
+	var critical := rng.randf() < _crit_chance
+	if critical:
+		raw *= _crit_multiplier
 	raw *= rng.randf_range(1.0 - _variance, 1.0 + _variance)
 	var dealt := victim.take_damage(maxi(roundi(raw), 1))
+	if critical:
+		_log({"kind": "critical", "actor": actor.name, "target": victim.name, "damage": dealt})
 	return dealt
 
 ## Cycle Feu > Vent > Foudre > Eau > Feu (characters_db.json > elements.beats).

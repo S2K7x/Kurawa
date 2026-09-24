@@ -57,7 +57,13 @@ Kurawa/
 │   ├── BreachPortal.gd     # la Brèche dessinée (anneaux runiques + déchirure)
 │   ├── RevealBurst.gd      # gerbe de lumière par rareté à la révélation
 │   ├── Combatant.gd        # état d'un combattant en piste (PV, ATB, altérations)
-│   └── CombatManager.gd    # combat au tour par tour (ATB Vitesse) + IA tactique
+│   ├── CombatManager.gd    # combat au tour par tour (ATB Vitesse) + IA tactique
+│   ├── ContentLibrary.gd   # accès aux chapitres/donjons + barème de récompenses
+│   ├── StoryScreen.gd      # chapitres, textes et combats du mode histoire
+│   ├── DungeonScreen.gd    # donjons rejouables
+│   ├── TeamSelect.gd       # composition de l'équipe de 3 avant un combat
+│   ├── CombatArena.gd      # écran de combat (manuel + auto)
+│   └── CombatUnit.gd       # vignette d'un combattant en combat
 ├── Tests/
 │   ├── run_tests.gd        # tests headless (voir « Lancer les tests »)
 │   ├── capture_screens.gd  # captures PNG des écrans (voir « Relire l'UI »)
@@ -68,10 +74,12 @@ Kurawa/
 │   ├── SummonReveal.tscn   # overlay de révélation (x1 et récap x10)
 │   ├── InventoryGrid.tscn  # galerie de guerriers
 │   ├── CharacterCard.tscn  # carte réutilisable (révélation, galerie, fiche)
-│   ├── GachaTest.tscn      # scène de debug Phase 1 (garde son propre PlayerManager)
-│   ├── StoryMap.tscn       # carte des chapitres (mode histoire) — Phase 3
-│   ├── DungeonSelect.tscn  # sélection de donjons rejouables — Phase 3
-│   └── CombatArena.tscn    # écran de combat — Phase 3
+│   ├── StoryScreen.tscn    # mode histoire
+│   ├── DungeonScreen.tscn  # donjons rejouables
+│   ├── TeamSelect.tscn     # composition d'équipe
+│   ├── CombatArena.tscn    # écran de combat
+│   ├── CombatUnit.tscn     # vignette de combattant
+│   └── GachaTest.tscn      # scène de debug Phase 1 (garde son propre PlayerManager)
 └── Assets/
     ├── Characters/         # illustrations des personnages
     ├── UI/
@@ -92,7 +100,7 @@ par l'auteur : ils définissent la direction visuelle décrite ci-dessous.
 
 **Ne pas sauter à la Phase 2 avant que la Phase 1 soit testée et fonctionnelle** (probabilités de tirage vérifiées, sauvegarde fiable).
 
-**État au 2026-09-24 :** Phases 1 et 2 terminées. Phase 3 : le **moteur** de combat, les compétences exécutables et tout le contenu PvE (4 chapitres, 6 donjons, 6 mobs, 2 boss) sont faits et testés (`Tests/run_tests.gd`, 82 vérifications). Il reste les **écrans** de la Phase 3 : sélection d'équipe, StoryMap, DungeonSelect, CombatArena.
+**État au 2026-09-24 :** Phases 1, 2 et 3 terminées et couvertes par `Tests/run_tests.gd` (92 vérifications), de l'invocation au combat gagné avec récompenses. Reste la Phase 4 : illustrations, audio, exports.
 
 ## Architecture Phases 1-2
 
@@ -154,6 +162,12 @@ Captures PNG de tous les écrans (nécessite un vrai rendu, donc **pas** `--head
   niveau et les étoiles (`PlayerManager.get_character_stats` / `get_character_skill`)
 - Les adversaires montent en niveau sur la même courbe que les guerriers ; c'est le contenu
   (`story.json`, `dungeons.json`) qui fixe leur niveau, jamais `enemies.json`
+- **Flux d'un combat :** un écran (Histoire/Donjons) émet `encounter_requested` → `Main` ouvre
+  `TeamSelect` → `Main.start_combat()` paie l'énergie → `CombatArena.begin()`. L'arène est le
+  seul endroit qui verse les récompenses (`PlayerManager.grant_victory`). Un écran de contenu
+  ne lance jamais un combat lui-même
+- `CombatArena.step_delay` cadence l'affichage ; à 0 la boucle se déroule d'un trait
+  (c'est ce que font les tests)
 
 ## Équilibrer
 

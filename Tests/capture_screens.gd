@@ -62,7 +62,37 @@ func _process(_delta: float) -> bool:
 				{"character": ssr, "rarity": "SSR", "is_new": true, "stars": 1, "or_bonus": 0}])
 		420:
 			_shot("06_ssr")
-		426:
+		430:
+			_main._arena._on_continue() if _main._arena.visible else null
+			_main._show(_main.get_node("%ScreenHost").get_child(0))
+			_main.get_node("%ScreenHost").get_child(0)._reveal._close()
+			_main.get_node("%StoryNav").button_pressed = true
+			_main._show(_main.get_node("%ScreenHost").get_child(2))
+		440:
+			_shot("07_histoire")
+			_main.get_node("%DungeonNav").button_pressed = true
+			_main._show(_main.get_node("%ScreenHost").get_child(3))
+		450:
+			_shot("08_donjons")
+			var chapter: Dictionary = ContentLibrary.chapter("ch_01")
+			_main._on_encounter_requested({
+				"kicker": "CHAPITRE 1",
+				"title": chapter["battles"][0]["name"],
+				"enemies": chapter["battles"][0]["enemies"],
+				"chapter_id": "ch_01",
+				"battle_index": 0,
+			})
+		460:
+			_shot("09_equipe")
+			_main._arena.step_delay = 0.25
+			_main._on_team_confirmed(_main.player.get_owned_character_ids().slice(0, 3))
+		520:
+			_shot("10_combat")
+			_main._arena.step_delay = 0.02
+			_main._arena._on_auto_toggled(true)
+		760:
+			_shot("11_resultat")
+		766:
 			print("\n".join(_shots))
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE_PATH))
 			quit(0)

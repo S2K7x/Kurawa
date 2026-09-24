@@ -273,7 +273,7 @@ func start_ui_tests() -> void:
 
 func finish_ui_tests() -> void:
 	var host: Node = _main.get_node("%ScreenHost")
-	check(host.get_child_count() == 2, "Brèche et Guilde montées dans la coquille")
+	check(host.get_child_count() == 4, "Brèche, Guilde, Histoire et Donjons montés dans la coquille")
 	var summon: Node = host.get_child(0)
 	var inventory: Node = host.get_child(1)
 	check(summon.visible and not inventory.visible, "la Brèche est l'écran d'accueil")
@@ -299,6 +299,7 @@ func finish_ui_tests() -> void:
 	summon._reveal._close()
 	check(not summon._reveal.visible, "la révélation se referme")
 
+	test_combat_screens(host)
 	_ui_completed = true
 	_main.queue_free()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE_PATH))
@@ -436,3 +437,48 @@ func test_combat() -> void:
 	print("       chapitre 1, combat 1 : %s en %d tours" % [
 		"victoire" if outcome == CombatManager.Result.VICTORY else "défaite", chapter.turn_count])
 	player.free()
+
+## Enchaînement complet d'un combat depuis l'UI : demande d'un écran, composition d'équipe,
+## arène en mode auto, puis récompenses versées et avancement du chapitre enregistré.
+func test_combat_screens(host: Node) -> void:
+	print("Combat depuis l'interface")
+	var player: PlayerManager = _main.player
+	var story: Node = host.get_child(2)
+	var dungeons: Node = host.get_child(3)
+	check(story.has_signal("encounter_requested") and dungeons.has_signal("encounter_requested"),
+		"Histoire et Donjons demandent leurs combats à la coquille")
+	check(player.is_chapter_unlocked("ch_01") and not player.is_chapter_unlocked("ch_02"),
+		"seul le premier chapitre est ouvert en début de partie")
+
+	var chapter: Dictionary = ContentLibrary.chapter("ch_01")
+	var encounter := {
+		"title": chapter["battles"][0]["name"],
+		"enemies": chapter["battles"][0]["enemies"],
+		"chapter_id": "ch_01",
+		"battle_index": 0,
+	}
+	_main._on_encounter_requested(encounter)
+	var team_select: Node = _main._team_select
+	check(team_select.visible and team_select.get_node("%Grid").get_child_count() == player.inventory.size(),
+		"la composition d'équipe propose les guerriers possédés")
+
+	var team: Array = player.get_owned_character_ids().slice(0, 3)
+	var energy_before: int = player.stamina.get_current()
+	var or_before: int = player.or_de_guilde
+	_main._arena.step_delay = 0.0
+	_main._on_team_confirmed(team)
+	check(player.stamina.get_current() == energy_before - player.stamina.cost_per_combat,
+		"l'engagement coûte l'énergie d'un combat")
+	check(_main._arena.visible and not team_select.visible, "l'arène prend le relais")
+
+	# Mode auto : l'IA joue l'équipe du joueur jusqu'au bout du combat.
+	_main._arena._on_auto_toggled(true)
+	check(_main._arena._combat.is_over(), "le combat se résout en mode auto")
+	check(_main._arena.get_node("%Result").visible, "l'écran de fin de combat s'affiche")
+	if _main._arena._combat.result() == CombatManager.Result.VICTORY:
+		check(player.or_de_guilde > or_before, "la victoire verse de l'Or (%d -> %d)" % [or_before, player.or_de_guilde])
+		check(player.battles_cleared("ch_01") == 1, "le combat réussi fait avancer le chapitre")
+	else:
+		check(player.or_de_guilde == or_before, "une défaite ne verse rien")
+	_main._arena._on_continue()
+	check(not _main._arena.visible, "l'arène se referme sur Continuer")

@@ -32,11 +32,13 @@
     "max_star_duplicate_or": 500
   },
   "combat": {
-    "_comment": "Règles chiffrées du combat (Phase 3). Dégâts d'une frappe = power × ATK × defense_constant / (defense_constant + DEF_effective) × multiplicateur élémentaire, puis ±variance_pct. L'ordre de passage suit une jauge ATB remplie par la VIT.",
+    "_comment": "Règles chiffrées du combat (Phase 3). Dégâts d'une frappe = power × ATK × defense_constant / (defense_constant + DEF_effective) × multiplicateur élémentaire, puis coup critique éventuel, puis ±variance_pct. L'ordre de passage suit une jauge ATB remplie par la VIT. Les critiques sont là pour que deux équipes de force voisine ne donnent pas toujours le même vainqueur (sans eux, les taux de victoire mesurés étaient soit 0%, soit 100%).",
     "team_size": 3,
     "element_advantage_multiplier": 1.5,
     "element_disadvantage_multiplier": 0.75,
     "defense_constant": 300,
+    "crit_chance": 0.15,
+    "crit_multiplier": 1.5,
     "variance_pct": 5,
     "atb_threshold": 1000,
     "atb_speed_factor": 1.0,
@@ -45,6 +47,7 @@
   "rewards": {
     "_comment": "Récompenses de base d'un combat gagné, multipliées par le contenu joué (voir Data/story.json et Data/dungeons.json).",
     "base_or": 120,
-    "base_xp": 80
+    "base_xp": 80,
+    "per_enemy_level_pct": 12
   }
 }

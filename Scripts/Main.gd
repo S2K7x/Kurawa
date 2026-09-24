@@ -7,32 +7,42 @@ extends Control
 
 const SUMMON_SCREEN := preload("res://Scenes/SummonScreen.tscn")
 const INVENTORY_SCREEN := preload("res://Scenes/InventoryGrid.tscn")
+const STORY_SCREEN := preload("res://Scenes/StoryScreen.tscn")
+const DUNGEON_SCREEN := preload("res://Scenes/DungeonScreen.tscn")
+const TEAM_SELECT := preload("res://Scenes/TeamSelect.tscn")
+const COMBAT_ARENA := preload("res://Scenes/CombatArena.tscn")
 
 @onready var _screen_host: Control = %ScreenHost
 @onready var _summon_nav: Button = %SummonNav
 @onready var _guild_nav: Button = %GuildNav
+@onready var _story_nav: Button = %StoryNav
+@onready var _dungeon_nav: Button = %DungeonNav
 
 var player := PlayerManager.new()
 
-var _summon_screen: Control
-var _inventory_screen: Control
+var _screens: Array[Control] = []
+var _team_select: Control
+var _arena: Control
+## Combat demandé par un écran, en attente de la composition d'équipe.
+var _pending_encounter: Dictionary = {}
 
 func _ready() -> void:
 	add_child(player)
 	player.state_changed.connect(_refresh_top_bar)
 	_style_chrome()
 
-	_summon_screen = _add_screen(SUMMON_SCREEN)
-	_inventory_screen = _add_screen(INVENTORY_SCREEN)
+	for scene: PackedScene in [SUMMON_SCREEN, INVENTORY_SCREEN, STORY_SCREEN, DUNGEON_SCREEN]:
+		_screens.append(_add_screen(scene))
+	_build_combat_overlay()
 
 	var nav_group := ButtonGroup.new()
-	for nav: Button in [_summon_nav, _guild_nav]:
-		nav.button_group = nav_group
-		nav.toggle_mode = true
-	_summon_nav.pressed.connect(_show.bind(_summon_screen))
-	_guild_nav.pressed.connect(_show.bind(_inventory_screen))
+	var navs: Array[Button] = [_summon_nav, _guild_nav, _story_nav, _dungeon_nav]
+	for index in range(navs.size()):
+		navs[index].button_group = nav_group
+		navs[index].toggle_mode = true
+		navs[index].pressed.connect(_show.bind(_screens[index]))
 
-	_show(_summon_screen)
+	_show(_screens[0])
 	%RefreshTimer.timeout.connect(_refresh_top_bar)
 	_refresh_top_bar()
 
@@ -64,7 +74,7 @@ func _style_chrome() -> void:
 	%StaminaLabel.add_theme_stylebox_override("normal", _pill_style())
 	%StaminaLabel.add_theme_color_override("font_color", Color("#6fb98f"))
 
-	for nav: Button in [_summon_nav, _guild_nav]:
+	for nav: Button in [_summon_nav, _guild_nav, _story_nav, _dungeon_nav]:
 		nav.add_theme_stylebox_override("normal", Style.nav_tab(Color(0, 0, 0, 0)))
 		nav.add_theme_stylebox_override("hover", Style.nav_tab(Color(Style.GOLD, 0.35), 2))
 		nav.add_theme_stylebox_override("pressed", Style.nav_tab(Style.CRIMSON_BRIGHT, 3))
@@ -85,8 +95,48 @@ func _add_screen(scene: PackedScene) -> Control:
 	screen.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_screen_host.add_child(screen)
 	screen.setup(player)
+	if screen.has_signal("encounter_requested"):
+		screen.encounter_requested.connect(_on_encounter_requested)
 	screen.hide()
 	return screen
+
+## Sélection d'équipe et arène vivent dans un CanvasLayer : un combat prend tout l'écran,
+## barre de ressources et navigation comprises.
+func _build_combat_overlay() -> void:
+	var overlay := CanvasLayer.new()
+	overlay.layer = 8
+	add_child(overlay)
+
+	_team_select = TEAM_SELECT.instantiate()
+	overlay.add_child(_team_select)
+	_team_select.setup(player)
+	_team_select.hide()
+	_team_select.cancelled.connect(func() -> void: _team_select.hide())
+	_team_select.confirmed.connect(_on_team_confirmed)
+
+	_arena = COMBAT_ARENA.instantiate()
+	overlay.add_child(_arena)
+	_arena.setup(player)
+	_arena.finished.connect(_on_combat_finished)
+
+## Un écran a demandé un combat : on passe d'abord par la composition d'équipe.
+func _on_encounter_requested(encounter: Dictionary) -> void:
+	_pending_encounter = encounter
+	_team_select.open(encounter)
+
+func _on_team_confirmed(team_ids: Array) -> void:
+	# L'énergie se paie à l'engagement, pas à la victoire (GDD.md > Système d'énergie).
+	if not player.start_combat():
+		return
+	_team_select.hide()
+	_arena.begin(_pending_encounter, team_ids)
+
+func _on_combat_finished(_victory: bool) -> void:
+	_pending_encounter = {}
+	for screen: Control in _screen_host.get_children():
+		if screen.visible and screen.has_method("on_shown"):
+			screen.on_shown()
+	_refresh_top_bar()
 
 func _show(screen: Control) -> void:
 	for child: Control in _screen_host.get_children():
