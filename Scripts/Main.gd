@@ -203,3 +203,6 @@ func _refresh_top_bar() -> void:
 	else:
 		var seconds := ceili(stamina.seconds_to_next_point())
 		%StaminaLabel.text = "⚡ %d/%d · %d:%02d" % [current, stamina.max_stamina, seconds / 60, seconds % 60]
+	# Jauge trop basse pour un combat : la barre le dit avant qu'on ouvre un écran pour rien.
+	%StaminaLabel.add_theme_color_override("font_color",
+		Color("#6fb98f") if current >= stamina.cost_per_combat else Style.CRIMSON_BRIGHT)

@@ -106,6 +106,14 @@
             "mob_eclat_ardent",
             "mob_eclat_ardent"
           ]
+        },
+        {
+          "level": 20,
+          "enemies": [
+            "mob_carcasse_ardente",
+            "mob_eclat_ardent",
+            "mob_eclat_ardent"
+          ]
         }
       ]
     },
@@ -130,6 +138,14 @@
           "enemies": [
             "mob_colosse_faille",
             "mob_ressac_spectral",
+            "mob_ressac_spectral"
+          ]
+        },
+        {
+          "level": 20,
+          "enemies": [
+            "mob_colosse_faille",
+            "mob_colosse_faille",
             "mob_ressac_spectral"
           ]
         }
@@ -158,6 +174,14 @@
             "mob_arc_crepitant",
             "mob_arc_crepitant"
           ]
+        },
+        {
+          "level": 20,
+          "enemies": [
+            "mob_veilleur_brise",
+            "mob_veilleur_brise",
+            "mob_arc_crepitant"
+          ]
         }
       ]
     },
@@ -183,6 +207,14 @@
             "mob_souffle_lacere",
             "mob_souffle_lacere",
             "mob_veilleur_brise"
+          ]
+        },
+        {
+          "level": 20,
+          "enemies": [
+            "mob_souffle_lacere",
+            "mob_souffle_lacere",
+            "mob_souffle_lacere"
           ]
         }
       ]
