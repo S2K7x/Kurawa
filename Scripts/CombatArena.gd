@@ -7,6 +7,8 @@ extends Control
 ## Toute la règle du jeu vit dans CombatManager : cet écran ne fait qu'ordonner et afficher.
 
 signal finished(victory: bool)
+## Le joueur veut relancer le même combat : c'est Main qui repaie l'énergie et relance.
+signal replay_requested(encounter: Dictionary, team_ids: Array)
 
 const UNIT_SCENE := preload("res://Scenes/CombatUnit.tscn")
 
@@ -42,6 +44,7 @@ func _ready() -> void:
 	%AutoButton.toggled.connect(_on_auto_toggled)
 	%FleeButton.pressed.connect(_on_flee)
 	%ContinueButton.pressed.connect(_on_continue)
+	%ReplayButton.pressed.connect(_on_replay)
 	%ContinueButton.add_theme_stylebox_override("normal", Style.action_button(Style.CRIMSON, Style.GOLD_DIM))
 	%ContinueButton.add_theme_stylebox_override("hover", Style.action_button(Style.CRIMSON_BRIGHT, Style.GOLD))
 	# Le panneau de fin doit être franchement opaque : il conclut, il ne se superpose pas.
@@ -295,7 +298,16 @@ func _show_result(victory: bool, granted: Dictionary) -> void:
 	else:
 		lines.append("[color=#96887e]L'énergie dépensée est perdue. Monte tes guerriers en donjon et reviens.[/color]")
 	%ResultBody.text = "\n".join(lines)
+	# Rejouer n'a de sens que si l'énergie suit : farmer un donjon ne doit pas demander
+	# de retraverser trois écrans à chaque tentative.
+	var cost := _player.stamina.cost_per_combat
+	%ReplayButton.text = "REJOUER (⚡%d)" % cost
+	%ReplayButton.disabled = _player.stamina.get_current() < cost
 	_result.show()
+
+func _on_replay() -> void:
+	_result.hide()
+	replay_requested.emit(_encounter, _team_ids.duplicate())
 
 func _on_continue() -> void:
 	_result.hide()

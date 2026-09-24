@@ -499,6 +499,14 @@ func test_combat_screens(host: Node) -> void:
 		check(player.battles_cleared("ch_01") == 1, "le combat réussi fait avancer le chapitre")
 	else:
 		check(player.or_de_guilde == or_before, "une défaite ne verse rien")
+	# Rejouer relance le même combat en repayant l'énergie, sans repasser par les écrans.
+	var energy_before_replay: int = player.stamina.get_current()
+	_main._arena._on_replay()
+	check(player.stamina.get_current() == energy_before_replay - player.stamina.cost_per_combat,
+		"rejouer repaie l'énergie d'un combat")
+	check(_main._arena._combat.turn_count > 0 and _main._arena.visible, "rejouer relance le même combat")
+	_main._arena._on_auto_toggled(true)
+
 	_main._arena._on_continue()
 	check(not _main._arena.visible, "l'arène se referme sur Continuer")
 

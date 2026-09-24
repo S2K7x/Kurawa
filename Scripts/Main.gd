@@ -123,6 +123,7 @@ func _build_combat_overlay() -> void:
 	overlay.add_child(_arena)
 	_arena.setup(player)
 	_arena.finished.connect(_on_combat_finished)
+	_arena.replay_requested.connect(_on_replay_requested)
 
 ## Accueil et tutoriel : au-dessus de tout, y compris d'un combat en cours (il n'y en a
 ## jamais au lancement, mais l'ordre des calques doit rester sans ambiguïté).
@@ -170,6 +171,14 @@ func _on_team_confirmed(team_ids: Array) -> void:
 		return
 	_team_select.hide()
 	_arena.begin(_pending_encounter, team_ids)
+
+## Relance du même combat depuis l'écran de fin : l'énergie est repayée comme pour un
+## engagement normal, et l'équipe reste celle qui vient de se battre.
+func _on_replay_requested(encounter: Dictionary, team_ids: Array) -> void:
+	if not player.start_combat():
+		_arena._show_result(false, {})
+		return
+	_arena.begin(encounter, team_ids)
 
 func _on_combat_finished(_victory: bool) -> void:
 	_pending_encounter = {}
