@@ -1,0 +1,188 @@
+{
+  "_comment": "Catalogue de départ — Kurawa. 12 guerriers originaux (aucun personnage sous licence). Éléments : Feu > Vent > Foudre > Eau > Feu. Stats de base au niveau 1, à rééquilibrer en Phase 3.",
+  "elements": ["Feu", "Vent", "Foudre", "Eau"],
+  "rarities": {
+    "R": { "drop_rate": 0.92, "color": "#4a90d9" },
+    "SR": { "drop_rate": 0.065, "color": "#9b59b6" },
+    "SSR": { "drop_rate": 0.015, "color": "#f5c518" }
+  },
+  "card_aspect_ratio": "2:3",
+  "multi_pull": {
+    "_comment": "Le tirage x10 doit avoir un avantage sur 10 tirages simples : remise et/ou garantie SR. Valeurs de départ à ajuster en Phase 1.",
+    "size": 10,
+    "discount_pct": 10,
+    "guaranteed_min_rarity": "SR"
+  },
+  "duplicate_system": {
+    "_comment": "5-6 paliers d'étoiles par personnage. Un doublon obtenu au tirage fait monter d'un palier. Bonus de stats à chaque palier, déblocage/amélioration de compétence aux paliers clés (3 et 6). À affiner en Phase 1 avec ProgressionSystem.gd.",
+    "max_stars": 6,
+    "tiers": [
+      { "star": 1, "stat_bonus_pct": 0, "unlock": null },
+      { "star": 2, "stat_bonus_pct": 8, "unlock": null },
+      { "star": 3, "stat_bonus_pct": 16, "unlock": "Amélioration de la compétence spéciale (effet renforcé ou coût réduit)" },
+      { "star": 4, "stat_bonus_pct": 26, "unlock": null },
+      { "star": 5, "stat_bonus_pct": 38, "unlock": null },
+      { "star": 6, "stat_bonus_pct": 52, "unlock": "Version ultime de la compétence spéciale" }
+    ]
+  },
+  "characters": [
+    {
+      "id": "kur_001",
+      "name": "Renji Kotsu",
+      "origin": "Bidonvilles de Zan'kara",
+      "element": "Feu",
+      "rarity": "R",
+      "stats": { "atk": 120, "def": 80, "vit": 95, "pv": 900 },
+      "skill": {
+        "name": "Poing Cendré",
+        "description": "Frappe l'ennemi le plus faible et inflige une brûlure légère sur 2 tours."
+      }
+    },
+    {
+      "id": "kur_002",
+      "name": "Mira Solenne",
+      "origin": "Archipel de Verre",
+      "element": "Eau",
+      "rarity": "R",
+      "stats": { "atk": 90, "def": 100, "vit": 100, "pv": 950 },
+      "skill": {
+        "name": "Voile de Brume",
+        "description": "Réduit les dégâts subis par l'équipe de 15% pendant 1 tour."
+      }
+    },
+    {
+      "id": "kur_003",
+      "name": "Deshi Varn",
+      "origin": "Plaines Électriques d'Ohm",
+      "element": "Foudre",
+      "rarity": "R",
+      "stats": { "atk": 130, "def": 70, "vit": 110, "pv": 820 },
+      "skill": {
+        "name": "Décharge Franche",
+        "description": "Attaque rapide qui a une chance d'étourdir la cible 1 tour."
+      }
+    },
+    {
+      "id": "kur_004",
+      "name": "Suwa Lindr",
+      "origin": "Hauts-Plateaux de Kaelin",
+      "element": "Vent",
+      "rarity": "R",
+      "stats": { "atk": 100, "def": 85, "vit": 120, "pv": 850 },
+      "skill": {
+        "name": "Lame de Courant",
+        "description": "Enchaîne deux frappes rapides sur la même cible."
+      }
+    },
+    {
+      "id": "kur_005",
+      "name": "Kael Ashworth",
+      "origin": "Forge Royale d'Emberlyn",
+      "element": "Feu",
+      "rarity": "SR",
+      "stats": { "atk": 165, "def": 110, "vit": 105, "pv": 1150 },
+      "skill": {
+        "name": "Embrasement du Forgeron",
+        "description": "Enflamme son arme : les 3 prochaines attaques infligent des dégâts bonus et propagent la brûlure."
+      }
+    },
+    {
+      "id": "kur_006",
+      "name": "Nyx Ombreval",
+      "origin": "Cité engloutie de Thassar",
+      "element": "Eau",
+      "rarity": "SR",
+      "stats": { "atk": 140, "def": 130, "vit": 100, "pv": 1250 },
+      "skill": {
+        "name": "Marée Noire",
+        "description": "Inflige des dégâts à toute l'équipe adverse et soigne son équipe de 10% des dégâts infligés."
+      }
+    },
+    {
+      "id": "kur_007",
+      "name": "Tobin Kreig",
+      "origin": "Front Orageux de Vantalis",
+      "element": "Foudre",
+      "rarity": "SR",
+      "stats": { "atk": 175, "def": 90, "vit": 135, "pv": 1050 },
+      "skill": {
+        "name": "Éclair Fourchu",
+        "description": "Frappe deux cibles aléatoires avec une chance élevée d'étourdissement."
+      }
+    },
+    {
+      "id": "kur_008",
+      "name": "Airi Senkou",
+      "origin": "Monastère Suspendu de Genra",
+      "element": "Vent",
+      "rarity": "SR",
+      "stats": { "atk": 150, "def": 100, "vit": 145, "pv": 1000 },
+      "skill": {
+        "name": "Pas du Zéphyr",
+        "description": "Esquive garantie la prochaine attaque et augmente sa Vitesse pour 2 tours."
+      }
+    },
+    {
+      "id": "kur_009",
+      "name": "Ryoto Vahn",
+      "origin": "Volcan Sacré de Pyraxis",
+      "element": "Feu",
+      "rarity": "SSR",
+      "stats": { "atk": 220, "def": 140, "vit": 125, "pv": 1500 },
+      "skill": {
+        "name": "Rugissement du Pyraxis",
+        "description": "Explosion massive sur toute l'équipe adverse ; brûlure garantie et dégâts bonus si la cible est déjà brûlée."
+      }
+    },
+    {
+      "id": "kur_010",
+      "name": "Selene Maren",
+      "origin": "Abysses de Coralind",
+      "element": "Eau",
+      "rarity": "SSR",
+      "stats": { "atk": 190, "def": 170, "vit": 115, "pv": 1650 },
+      "skill": {
+        "name": "Étreinte des Abysses",
+        "description": "Immobilise une cible pendant 1 tour et soigne l'équipe entière chaque tour où elle reste immobilisée."
+      }
+    },
+    {
+      "id": "kur_011",
+      "name": "Jorin Kestrel",
+      "origin": "Cité Volante de Skarn",
+      "element": "Vent",
+      "rarity": "SSR",
+      "stats": { "atk": 205, "def": 130, "vit": 160, "pv": 1400 },
+      "skill": {
+        "name": "Tempête de Skarn",
+        "description": "Agit deux fois ce tour ; la seconde action inflige des dégâts amplifiés si la cible est sous 50% PV."
+      }
+    },
+    {
+      "id": "kur_012",
+      "name": "Ashka Voltis",
+      "origin": "Tour Électromagnétique de Nordheim",
+      "element": "Foudre",
+      "rarity": "SSR",
+      "stats": { "atk": 210, "def": 120, "vit": 150, "pv": 1450 },
+      "skill": {
+        "name": "Surcharge Totale",
+        "description": "Charge 1 tour puis libère une attaque sur toute l'équipe adverse, ignorant une partie de la Défense."
+      }
+    },
+    {
+      "id": "kur_013",
+      "name": "Talia Wren",
+      "origin": "Guilde du joueur",
+      "element": "Vent",
+      "rarity": "SR",
+      "starter": true,
+      "_comment": "Personnage garanti offert au joueur au tout début du mode histoire (avant tout tirage). Liée narrativement à la guilde du joueur, première recrue à ses côtés face à l'Ordre Voracis.",
+      "stats": { "atk": 145, "def": 105, "vit": 130, "pv": 1100 },
+      "skill": {
+        "name": "Serment de la Guilde",
+        "description": "Augmente l'ATK de toute l'équipe pendant 2 tours ; effet renforcé si elle est la dernière survivante de l'équipe."
+      }
+    }
+  ]
+}

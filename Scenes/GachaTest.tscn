@@ -1,0 +1,46 @@
+[gd_scene load_steps=2 format=3 uid="uid://bqx8k1gachatest"]
+
+[ext_resource type="Script" path="res://Scripts/GachaTest.gd" id="1"]
+
+[node name="GachaTest" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="StatsLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 60.0
+offset_right = 680.0
+offset_bottom = 100.0
+text = "Aucun tirage encore."
+autowrap_mode = 2
+
+[node name="ResultLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 130.0
+offset_right = 680.0
+offset_bottom = 900.0
+text = "Appuie sur Tirer pour invoquer un guerrier depuis la Brèche."
+autowrap_mode = 2
+
+[node name="PullButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 1080.0
+offset_right = 340.0
+offset_bottom = 1150.0
+text = "Tirer (x1)"
+
+[node name="PullX10Button" type="Button" parent="."]
+layout_mode = 0
+offset_left = 380.0
+offset_top = 1080.0
+offset_right = 680.0
+offset_bottom = 1150.0
+text = "Tirer (x10)"
