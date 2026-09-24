@@ -1,22 +1,73 @@
 {
   "_comment": "Catalogue de départ — Kurawa. 12 guerriers originaux (aucun personnage sous licence). Éléments : Feu > Vent > Foudre > Eau > Feu. Stats de base au niveau 1, à rééquilibrer en Phase 3.",
-  "elements": ["Feu", "Vent", "Foudre", "Eau"],
+  "elements": {
+    "_comment": "Cycle de forces : Feu > Vent > Foudre > Eau > Feu (voir GDD.md > Personnages). `beats` = élément contre lequel celui-ci est fort. `color` sert aux placeholders et à l'UI (Phase 2).",
+    "Feu": {
+      "color": "#e8552e",
+      "beats": "Vent"
+    },
+    "Vent": {
+      "color": "#4ec9a0",
+      "beats": "Foudre"
+    },
+    "Foudre": {
+      "color": "#f0d040",
+      "beats": "Eau"
+    },
+    "Eau": {
+      "color": "#3a9ad9",
+      "beats": "Feu"
+    }
+  },
   "rarities": {
-    "R": { "drop_rate": 0.92, "color": "#4a90d9" },
-    "SR": { "drop_rate": 0.065, "color": "#9b59b6" },
-    "SSR": { "drop_rate": 0.015, "color": "#f5c518" }
+    "R": {
+      "drop_rate": 0.92,
+      "color": "#4a90d9"
+    },
+    "SR": {
+      "drop_rate": 0.065,
+      "color": "#9b59b6"
+    },
+    "SSR": {
+      "drop_rate": 0.015,
+      "color": "#f5c518"
+    }
   },
   "card_aspect_ratio": "2:3",
   "duplicate_system": {
     "_comment": "5-6 paliers d'étoiles par personnage. Un doublon obtenu au tirage fait monter d'un palier. Bonus de stats à chaque palier, déblocage/amélioration de compétence aux paliers clés (3 et 6). Appliqué par ProgressionSystem.gd ; au-delà de max_stars, un doublon est converti en Or (voir economy.json > progression).",
     "max_stars": 6,
     "tiers": [
-      { "star": 1, "stat_bonus_pct": 0, "unlock": null },
-      { "star": 2, "stat_bonus_pct": 8, "unlock": null },
-      { "star": 3, "stat_bonus_pct": 16, "unlock": "Amélioration de la compétence spéciale (effet renforcé ou coût réduit)" },
-      { "star": 4, "stat_bonus_pct": 26, "unlock": null },
-      { "star": 5, "stat_bonus_pct": 38, "unlock": null },
-      { "star": 6, "stat_bonus_pct": 52, "unlock": "Version ultime de la compétence spéciale" }
+      {
+        "star": 1,
+        "stat_bonus_pct": 0,
+        "unlock": null
+      },
+      {
+        "star": 2,
+        "stat_bonus_pct": 8,
+        "unlock": null
+      },
+      {
+        "star": 3,
+        "stat_bonus_pct": 16,
+        "unlock": "Amélioration de la compétence spéciale (effet renforcé ou coût réduit)"
+      },
+      {
+        "star": 4,
+        "stat_bonus_pct": 26,
+        "unlock": null
+      },
+      {
+        "star": 5,
+        "stat_bonus_pct": 38,
+        "unlock": null
+      },
+      {
+        "star": 6,
+        "stat_bonus_pct": 52,
+        "unlock": "Version ultime de la compétence spéciale"
+      }
     ]
   },
   "characters": [
@@ -26,7 +77,12 @@
       "origin": "Bidonvilles de Zan'kara",
       "element": "Feu",
       "rarity": "R",
-      "stats": { "atk": 120, "def": 80, "vit": 95, "pv": 900 },
+      "stats": {
+        "atk": 120,
+        "def": 80,
+        "vit": 95,
+        "pv": 900
+      },
       "skill": {
         "name": "Poing Cendré",
         "description": "Frappe l'ennemi le plus faible et inflige une brûlure légère sur 2 tours."
@@ -38,7 +94,12 @@
       "origin": "Archipel de Verre",
       "element": "Eau",
       "rarity": "R",
-      "stats": { "atk": 90, "def": 100, "vit": 100, "pv": 950 },
+      "stats": {
+        "atk": 90,
+        "def": 100,
+        "vit": 100,
+        "pv": 950
+      },
       "skill": {
         "name": "Voile de Brume",
         "description": "Réduit les dégâts subis par l'équipe de 15% pendant 1 tour."
@@ -50,7 +111,12 @@
       "origin": "Plaines Électriques d'Ohm",
       "element": "Foudre",
       "rarity": "R",
-      "stats": { "atk": 130, "def": 70, "vit": 110, "pv": 820 },
+      "stats": {
+        "atk": 130,
+        "def": 70,
+        "vit": 110,
+        "pv": 820
+      },
       "skill": {
         "name": "Décharge Franche",
         "description": "Attaque rapide qui a une chance d'étourdir la cible 1 tour."
@@ -62,7 +128,12 @@
       "origin": "Hauts-Plateaux de Kaelin",
       "element": "Vent",
       "rarity": "R",
-      "stats": { "atk": 100, "def": 85, "vit": 120, "pv": 850 },
+      "stats": {
+        "atk": 100,
+        "def": 85,
+        "vit": 120,
+        "pv": 850
+      },
       "skill": {
         "name": "Lame de Courant",
         "description": "Enchaîne deux frappes rapides sur la même cible."
@@ -74,7 +145,12 @@
       "origin": "Forge Royale d'Emberlyn",
       "element": "Feu",
       "rarity": "SR",
-      "stats": { "atk": 165, "def": 110, "vit": 105, "pv": 1150 },
+      "stats": {
+        "atk": 165,
+        "def": 110,
+        "vit": 105,
+        "pv": 1150
+      },
       "skill": {
         "name": "Embrasement du Forgeron",
         "description": "Enflamme son arme : les 3 prochaines attaques infligent des dégâts bonus et propagent la brûlure."
@@ -86,7 +162,12 @@
       "origin": "Cité engloutie de Thassar",
       "element": "Eau",
       "rarity": "SR",
-      "stats": { "atk": 140, "def": 130, "vit": 100, "pv": 1250 },
+      "stats": {
+        "atk": 140,
+        "def": 130,
+        "vit": 100,
+        "pv": 1250
+      },
       "skill": {
         "name": "Marée Noire",
         "description": "Inflige des dégâts à toute l'équipe adverse et soigne son équipe de 10% des dégâts infligés."
@@ -98,7 +179,12 @@
       "origin": "Front Orageux de Vantalis",
       "element": "Foudre",
       "rarity": "SR",
-      "stats": { "atk": 175, "def": 90, "vit": 135, "pv": 1050 },
+      "stats": {
+        "atk": 175,
+        "def": 90,
+        "vit": 135,
+        "pv": 1050
+      },
       "skill": {
         "name": "Éclair Fourchu",
         "description": "Frappe deux cibles aléatoires avec une chance élevée d'étourdissement."
@@ -110,7 +196,12 @@
       "origin": "Monastère Suspendu de Genra",
       "element": "Vent",
       "rarity": "SR",
-      "stats": { "atk": 150, "def": 100, "vit": 145, "pv": 1000 },
+      "stats": {
+        "atk": 150,
+        "def": 100,
+        "vit": 145,
+        "pv": 1000
+      },
       "skill": {
         "name": "Pas du Zéphyr",
         "description": "Esquive garantie la prochaine attaque et augmente sa Vitesse pour 2 tours."
@@ -122,7 +213,12 @@
       "origin": "Volcan Sacré de Pyraxis",
       "element": "Feu",
       "rarity": "SSR",
-      "stats": { "atk": 220, "def": 140, "vit": 125, "pv": 1500 },
+      "stats": {
+        "atk": 220,
+        "def": 140,
+        "vit": 125,
+        "pv": 1500
+      },
       "skill": {
         "name": "Rugissement du Pyraxis",
         "description": "Explosion massive sur toute l'équipe adverse ; brûlure garantie et dégâts bonus si la cible est déjà brûlée."
@@ -134,7 +230,12 @@
       "origin": "Abysses de Coralind",
       "element": "Eau",
       "rarity": "SSR",
-      "stats": { "atk": 190, "def": 170, "vit": 115, "pv": 1650 },
+      "stats": {
+        "atk": 190,
+        "def": 170,
+        "vit": 115,
+        "pv": 1650
+      },
       "skill": {
         "name": "Étreinte des Abysses",
         "description": "Immobilise une cible pendant 1 tour et soigne l'équipe entière chaque tour où elle reste immobilisée."
@@ -146,7 +247,12 @@
       "origin": "Cité Volante de Skarn",
       "element": "Vent",
       "rarity": "SSR",
-      "stats": { "atk": 205, "def": 130, "vit": 160, "pv": 1400 },
+      "stats": {
+        "atk": 205,
+        "def": 130,
+        "vit": 160,
+        "pv": 1400
+      },
       "skill": {
         "name": "Tempête de Skarn",
         "description": "Agit deux fois ce tour ; la seconde action inflige des dégâts amplifiés si la cible est sous 50% PV."
@@ -158,7 +264,12 @@
       "origin": "Tour Électromagnétique de Nordheim",
       "element": "Foudre",
       "rarity": "SSR",
-      "stats": { "atk": 210, "def": 120, "vit": 150, "pv": 1450 },
+      "stats": {
+        "atk": 210,
+        "def": 120,
+        "vit": 150,
+        "pv": 1450
+      },
       "skill": {
         "name": "Surcharge Totale",
         "description": "Charge 1 tour puis libère une attaque sur toute l'équipe adverse, ignorant une partie de la Défense."
@@ -172,7 +283,12 @@
       "rarity": "SR",
       "starter": true,
       "_comment": "Personnage garanti offert au joueur au tout début du mode histoire (avant tout tirage). Liée narrativement à la guilde du joueur, première recrue à ses côtés face à l'Ordre Voracis.",
-      "stats": { "atk": 145, "def": 105, "vit": 130, "pv": 1100 },
+      "stats": {
+        "atk": 145,
+        "def": 105,
+        "vit": 130,
+        "pv": 1100
+      },
       "skill": {
         "name": "Serment de la Guilde",
         "description": "Augmente l'ATK de toute l'équipe pendant 2 tours ; effet renforcé si elle est la dernière survivante de l'équipe."

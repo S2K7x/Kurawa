@@ -26,7 +26,7 @@ var progression := ProgressionSystem.new()
 var _catalog: Dictionary = {}
 
 func _init() -> void:
-	for character: Dictionary in DataLoader.load_json(DataLoader.CHARACTERS_DB_PATH).get("characters", []):
+	for character: Dictionary in DataLoader.characters_db().get("characters", []):
 		_catalog[character["id"]] = character
 
 func _ready() -> void:

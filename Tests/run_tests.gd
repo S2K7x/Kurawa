@@ -10,7 +10,13 @@ var _failures: int = 0
 var _checks: int = 0
 var fake_time: float = 1_000_000.0
 
-func _init() -> void:
+# Les tests d'UI ont besoin que l'arbre tourne : on les lance après les tests de logique,
+# puis on vérifie l'état des écrans une fois quelques frames passées.
+var _ui_frames: int = 0
+var _main: Node
+var _ui_completed: bool = false
+
+func _initialize() -> void:
 	test_costs()
 	test_raw_rates()
 	test_pity()
@@ -20,8 +26,18 @@ func _init() -> void:
 	test_stamina()
 	test_save_roundtrip()
 	test_corrupt_save()
+	test_data_integrity()
+	start_ui_tests()
+
+func _process(_delta: float) -> bool:
+	_ui_frames += 1
+	if _ui_frames < 3:
+		return false
+	finish_ui_tests()
+	check(_ui_completed, "les tests d'UI sont allés au bout (aucune erreur runtime)")
 	print("\n%d vérifications, %d échec(s)." % [_checks, _failures])
 	quit(1 if _failures > 0 else 0)
+	return true
 
 func check(condition: bool, label: String) -> void:
 	_checks += 1
@@ -202,3 +218,85 @@ func test_corrupt_save() -> void:
 	DirAccess.remove_absolute(TEST_SAVE_PATH)
 	DirAccess.remove_absolute(TEST_SAVE_PATH + ".corrupt")
 	player.free()
+
+# --- Contenu & UI -----------------------------------------------------------------------------
+
+## Le contenu (couleurs, éléments, cycle de forces) doit rester cohérent : l'UI s'en sert
+## directement pour colorer cartes et filtres.
+func test_data_integrity() -> void:
+	print("Intégrité des données")
+	var elements := DataLoader.element_names()
+	check(elements.size() == 4, "4 éléments déclarés (%s)" % ", ".join(elements))
+	var cycle_ok := true
+	var visited: Array[String] = []
+	var current: String = elements[0]
+	for i in range(elements.size()):
+		visited.append(current)
+		current = DataLoader.element_beats(current)
+		cycle_ok = cycle_ok and current != ""
+	check(cycle_ok and current == elements[0] and visited.size() == 4,
+		"cycle des forces complet et fermé (%s)" % " > ".join(visited))
+	var colors_ok := true
+	for element: String in elements:
+		colors_ok = colors_ok and DataLoader.element_color(element) != DataLoader.FALLBACK_COLOR
+	for rarity: String in ["R", "SR", "SSR"]:
+		colors_ok = colors_ok and DataLoader.rarity_color(rarity) != DataLoader.FALLBACK_COLOR
+	check(colors_ok, "chaque élément et chaque rareté a une couleur")
+
+	var seen_ids := {}
+	var names_ok := true
+	var stats_ok := true
+	for character: Dictionary in DataLoader.characters_db().get("characters", []):
+		names_ok = names_ok and not seen_ids.has(character.get("id"))
+		seen_ids[character.get("id")] = true
+		names_ok = names_ok and elements.has(character.get("element", ""))
+		for stat: String in ["atk", "def", "vit", "pv"]:
+			stats_ok = stats_ok and int(character.get("stats", {}).get(stat, 0)) > 0
+	check(names_ok, "%d personnages : identifiants uniques et éléments valides" % seen_ids.size())
+	check(stats_ok, "chaque personnage a ses 4 stats renseignées")
+
+## Smoke test de la Phase 2 : les scènes se chargent, s'instancient et se peuplent sans erreur.
+func start_ui_tests() -> void:
+	print("Interface (Phase 2)")
+	for path: String in ["res://Scenes/Main.tscn", "res://Scenes/SummonScreen.tscn",
+			"res://Scenes/InventoryGrid.tscn", "res://Scenes/SummonReveal.tscn",
+			"res://Scenes/CharacterCard.tscn", "res://Scenes/GachaTest.tscn"]:
+		check(ResourceLoader.exists(path) and load(path) != null, "scène chargée : %s" % path.get_file())
+	check(load("res://Assets/UI/kurawa_theme.tres") is Theme, "thème kurawa_theme.tres valide")
+
+	_main = load("res://Scenes/Main.tscn").instantiate()
+	_main.player.save_path = TEST_SAVE_PATH
+	root.add_child(_main)
+	_main.player.reset_save()
+
+func finish_ui_tests() -> void:
+	var host: Node = _main.get_node("%ScreenHost")
+	check(host.get_child_count() == 2, "Brèche et Guilde montées dans la coquille")
+	var summon: Node = host.get_child(0)
+	var inventory: Node = host.get_child(1)
+	check(summon.visible and not inventory.visible, "la Brèche est l'écran d'accueil")
+
+	var grid: GridContainer = inventory.get_node("%Grid")
+	inventory.on_shown()
+	check(grid.get_child_count() == _main.player.inventory.size(),
+		"la galerie affiche les %d guerriers possédés" % _main.player.inventory.size())
+	var starter_card: CharacterCard = grid.get_child(0)
+	check(starter_card.character_id != "", "carte liée à un guerrier (%s)" % starter_card.character_id)
+	inventory._show_detail(starter_card.character_id)
+	check(inventory._detail.visible and inventory._detail_body.text.contains("Stats"),
+		"la fiche détaillée s'ouvre au clic sur une carte")
+
+	var results: Array = _main.player.summon(true)
+	check(results.size() == 10, "invocation x10 depuis l'UI")
+	summon._reveal.start(results)
+	check(summon._reveal.visible and summon._reveal.get_node("%CardHost").get_child_count() == 1,
+		"la révélation affiche une carte à la fois")
+	summon._reveal._show_summary()
+	check(summon._reveal.get_node("%Summary").visible and summon._reveal.get_node("%Grid").get_child_count() == 10,
+		"le récapitulatif x10 liste les 10 guerriers")
+	summon._reveal._close()
+	check(not summon._reveal.visible, "la révélation se referme")
+
+	_ui_completed = true
+	_main.queue_free()
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE_PATH))

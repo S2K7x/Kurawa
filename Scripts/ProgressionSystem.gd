@@ -21,7 +21,7 @@ func _init() -> void:
 	stat_growth_per_level_pct = float(config.get("stat_growth_per_level_pct", stat_growth_per_level_pct))
 	max_star_duplicate_or = int(config.get("max_star_duplicate_or", 0))
 
-	var duplicates: Dictionary = DataLoader.load_json(DataLoader.CHARACTERS_DB_PATH).get("duplicate_system", {})
+	var duplicates: Dictionary = DataLoader.characters_db().get("duplicate_system", {})
 	max_stars = int(duplicates.get("max_stars", max_stars))
 	tiers = duplicates.get("tiers", [])
 

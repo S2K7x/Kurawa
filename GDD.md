@@ -53,7 +53,7 @@ Le joueur est **Maître de guilde** : il dirige une guilde qui forme et envoie d
 - SR : 6.5%
 - R : 92%
 
-**Pity system :** garantie d'obtenir au moins un SR/SSR après un certain nombre de tirages consécutifs sans succès (seuil exact à définir en test — valeur de départ suggérée : 1 SR garanti tous les 10 tirages, 1 SSR garanti tous les 50-100 tirages).
+**Pity system :** garantie d'obtenir au moins un SR/SSR après un certain nombre de tirages consécutifs sans succès. **Calibré :** SR garanti tous les 10 tirages, SSR tous les 85 — mesuré à R 85.5% / SR 12.4% / SSR 2.1% en taux effectifs (le pity gonfle nécessairement les taux au-dessus des taux annoncés).
 
 **Tirage x10 :** avantage par rapport à 10 tirages simples — remise sur le coût total et/ou garantie d'au moins un SR dans le lot, à combiner avec le pity général.
 
@@ -158,4 +158,6 @@ Voir `CLAUDE.md` pour la structure des dossiers.
 4. Implémenter GachaSystem.gd (taux + pity) et valider les probabilités avant tout visuel. ✅ (vérifié sur 1M tirages, voir `Tests/run_tests.gd`)
 5. Concevoir le modèle de doublons (paliers d'étoiles/bonus par personnage) et le brancher sur PlayerManager.gd. ✅ (ProgressionSystem.gd — doublon au-delà de 6★ converti en Or)
 6. Ébaucher StaminaSystem.gd (recharge automatique, plafond, coût par combat) en parallèle du GachaSystem. ✅ (recharge aussi hors-jeu)
-7. Esquisser les 2-3 premiers chapitres du mode histoire pour poser le ton avant de coder l'IA tactique des donjons.
+7. Construire l'interface de la Phase 2 : coquille de navigation, écran d'invocation avec révélation par rareté, galerie filtrable et fiche de guerrier. ✅ (`Scenes/Main.tscn`, placeholders : dégradé de l'élément + initiales jusqu'à la Phase 4)
+8. Esquisser les 2-3 premiers chapitres du mode histoire pour poser le ton avant de coder l'IA tactique des donjons.
+9. Phase 3 : `CombatManager.gd` (ordre de passage par Vitesse, multiplicateurs élémentaires déjà décrits dans `characters_db.json > elements.beats`, IA tactique).

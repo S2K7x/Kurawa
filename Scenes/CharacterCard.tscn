@@ -1,0 +1,92 @@
+[gd_scene load_steps=2 format=3 uid="uid://b1kurawacard"]
+
+[ext_resource type="Script" path="res://Scripts/CharacterCard.gd" id="1"]
+
+[node name="CharacterCard" type="PanelContainer"]
+custom_minimum_size = Vector2(196, 294)
+size_flags_horizontal = 3
+mouse_filter = 0
+script = ExtResource("1")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="Art" type="TextureRect" parent="VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 0
+
+[node name="Initials" type="Label" parent="VBox/Art"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.7)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 64
+theme_override_colors/font_color = Color(1, 1, 1, 0.82)
+text = "??"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RarityLabel" type="Label" parent="VBox/Art"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 0
+offset_left = 8.0
+offset_top = 6.0
+offset_right = 100.0
+offset_bottom = 34.0
+mouse_filter = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.7)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 22
+text = "R"
+
+[node name="StarsLabel" type="Label" parent="VBox/Art"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -36.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.7)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 20
+text = "★"
+horizontal_alignment = 1
+
+[node name="NameLabel" type="Label" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 20
+text = "Nom"
+horizontal_alignment = 1
+autowrap_mode = 2
+text_overrun_behavior = 3
+max_lines_visible = 2
+
+[node name="SubLabel" type="Label" parent="VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(0.604, 0.584, 0.722, 1)
+text = "Niv 1"
+horizontal_alignment = 1

@@ -33,26 +33,35 @@ Le document de design complet (lore, économie, système de combat) est dans `GD
 Kurawa/
 ├── CLAUDE.md               # ce fichier
 ├── GDD.md                  # game design document complet
-├── project.godot            # à créer en Phase 1
+├── project.godot           # config Godot (scène principale : Scenes/Main.tscn)
 ├── Data/
 │   ├── characters_db.json  # catalogue des guerriers (source de vérité pour le contenu)
 │   └── economy.json        # équilibrage : coûts, pity, énergie, courbe d'XP, ressources de départ
 ├── Scripts/
-│   ├── DataLoader.gd       # lecture des Data/*.json
+│   ├── DataLoader.gd       # lecture des Data/*.json + couleurs éléments/raretés
 │   ├── GachaSystem.gd      # tirage RNG + pity system
 │   ├── PlayerManager.gd    # ressources joueur, inventaire, sauvegarde locale
 │   ├── StaminaSystem.gd    # jauge d'énergie, recharge automatique, coût par combat
-│   ├── CombatManager.gd    # combat au tour par tour (Vitesse) + IA tactique
-│   └── ProgressionSystem.gd # niveaux + paliers de doublons par personnage
+│   ├── ProgressionSystem.gd # niveaux + paliers de doublons par personnage
+│   ├── Main.gd             # coquille : barre de ressources + navigation
+│   ├── SummonScreen.gd     # écran d'invocation
+│   ├── SummonReveal.gd     # révélation des tirages (effets par rareté)
+│   ├── InventoryGrid.gd    # galerie + filtres + fiche détaillée
+│   ├── CharacterCard.gd    # carte de guerrier réutilisable
+│   └── CombatManager.gd    # combat au tour par tour (Vitesse) + IA tactique — Phase 3
 ├── Tests/
-│   └── run_tests.gd        # tests headless Phase 1 (voir « Lancer les tests »)
+│   ├── run_tests.gd        # tests headless (voir « Lancer les tests »)
+│   └── capture_screens.gd  # captures PNG des écrans (voir « Relire l'UI »)
 ├── Scenes/
-│   ├── GachaTest.tscn      # scène de validation manuelle de la Phase 1
+│   ├── Main.tscn           # scène principale (lancée par project.godot)
 │   ├── SummonScreen.tscn   # écran d'invocation (Brèche)
+│   ├── SummonReveal.tscn   # overlay de révélation (x1 et récap x10)
 │   ├── InventoryGrid.tscn  # galerie de guerriers
-│   ├── StoryMap.tscn       # carte des chapitres (mode histoire)
-│   ├── DungeonSelect.tscn  # sélection de donjons rejouables
-│   └── CombatArena.tscn    # écran de combat
+│   ├── CharacterCard.tscn  # carte réutilisable (révélation, galerie, fiche)
+│   ├── GachaTest.tscn      # scène de debug Phase 1 (garde son propre PlayerManager)
+│   ├── StoryMap.tscn       # carte des chapitres (mode histoire) — Phase 3
+│   ├── DungeonSelect.tscn  # sélection de donjons rejouables — Phase 3
+│   └── CombatArena.tscn    # écran de combat — Phase 3
 └── Assets/
     ├── Characters/         # illustrations des personnages
     ├── UI/                 # éléments d'interface
@@ -68,11 +77,16 @@ Kurawa/
 
 **Ne pas sauter à la Phase 2 avant que la Phase 1 soit testée et fonctionnelle** (probabilités de tirage vérifiées, sauvegarde fiable).
 
-## Architecture Phase 1
+**État au 2026-09-24 :** Phases 1 et 2 terminées et couvertes par `Tests/run_tests.gd` (62 vérifications). La Phase 3 (combat) est la suivante.
+
+## Architecture Phases 1-2
 
 - `GachaSystem`, `StaminaSystem`, `ProgressionSystem` : logique pure (`RefCounted`), sans accès aux monnaies ni au disque
 - `PlayerManager` (Node) : possède ces trois systèmes, les monnaies et l'inventaire, et est le **seul** à lire/écrire la sauvegarde (`user://kurawa_save.json`, écriture atomique, sauvegarde illisible mise de côté en `.corrupt`)
 - L'énergie se recharge sur l'horloge système (continue quand le jeu est fermé)
+- `Main` est le **seul** à instancier `PlayerManager` ; chaque écran le reçoit via `setup(player)` et ne crée jamais le sien (une seule sauvegarde en jeu). Un écran expose `setup()` et, si besoin, `on_shown()`
+- Les overlays plein écran (révélation, fiche détaillée) vivent dans un `CanvasLayer` pour passer au-dessus de la barre de ressources et de la navigation. **Attention :** une fois un nœud reparenté dans un `CanvasLayer`, les recherches par nom unique (`%Nom`) ne le trouvent plus — capturer les références en `@onready` avant le reparentage
+- Couleurs d'éléments et de raretés : toujours via `DataLoader.element_color()` / `rarity_color()`, jamais en dur dans l'UI
 
 ## Lancer les tests
 
@@ -81,6 +95,17 @@ Kurawa/
 ```
 
 Code de sortie 0 si tout passe. Après ajout/renommage d'un `class_name`, lancer d'abord `--headless --path . --import` pour rafraîchir le cache de classes.
+
+Les tests d'UI montent réellement `Main.tscn` dans l'arbre : une erreur runtime dans un écran fait échouer la vérification « les tests d'UI sont allés au bout ».
+
+## Relire l'UI
+
+Captures PNG de tous les écrans (nécessite un vrai rendu, donc **pas** `--headless`) :
+
+```bash
+/Applications/Godot.app/Contents/MacOS/Godot --path . --resolution 720x1280 \
+  -s res://Tests/capture_screens.gd -- /chemin/de/sortie
+```
 
 ## Conventions de code
 
