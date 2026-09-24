@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://d2kurawasummon"]
+[gd_scene load_steps=4 format=3 uid="uid://d2kurawasummon"]
 
 [ext_resource type="Script" path="res://Scripts/SummonScreen.gd" id="1"]
+[ext_resource type="Script" path="res://Scripts/BreachPortal.gd" id="2"]
+[ext_resource type="Script" path="res://Scripts/OrnateFrame.gd" id="3"]
 
 [node name="SummonScreen" type="Control"]
 layout_mode = 3
@@ -19,93 +21,103 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 28
-theme_override_constants/margin_top = 20
+theme_override_constants/margin_top = 24
 theme_override_constants/margin_right = 28
-theme_override_constants/margin_bottom = 20
+theme_override_constants/margin_bottom = 22
 
 [node name="VBox" type="VBoxContainer" parent="Margin"]
 layout_mode = 2
-theme_override_constants/separation = 18
+theme_override_constants/separation = 14
+
+[node name="Kicker" type="Label" parent="Margin/VBox"]
+layout_mode = 2
+theme_type_variation = &"Caption"
+theme_override_font_sizes/font_size = 15
+text = "DÉCHIRURE DIMENSIONNELLE"
+horizontal_alignment = 1
 
 [node name="Title" type="Label" parent="Margin/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 40
-text = "La Brèche"
+theme_type_variation = &"Display"
+text = "LA BRÈCHE"
 horizontal_alignment = 1
 
 [node name="Subtitle" type="Label" parent="Margin/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 19
-theme_override_colors/font_color = Color(0.604, 0.584, 0.722, 1)
+theme_type_variation = &"Caption"
 text = "Ouvre la déchirure et appelle un guerrier dans ta guilde."
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="BreachFrame" type="PanelContainer" parent="Margin/VBox"]
+[node name="Portal" type="Control" parent="Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 330)
 layout_mode = 2
 size_flags_vertical = 3
-
-[node name="Center" type="CenterContainer" parent="Margin/VBox/BreachFrame"]
-layout_mode = 2
-
-[node name="Portal" type="Panel" parent="Margin/VBox/BreachFrame/Center"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 240)
-layout_mode = 2
-pivot_offset = Vector2(120, 120)
 mouse_filter = 2
+script = ExtResource("2")
 
 [node name="PityPanel" type="PanelContainer" parent="Margin/VBox"]
+unique_name_in_owner = true
 layout_mode = 2
 
 [node name="VBox" type="VBoxContainer" parent="Margin/VBox/PityPanel"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 8
 
 [node name="SrLabel" type="Label" parent="Margin/VBox/PityPanel/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 19
+theme_type_variation = &"Caption"
+theme_override_font_sizes/font_size = 16
 text = "SR garanti"
 
 [node name="SrBar" type="ProgressBar" parent="Margin/VBox/PityPanel/VBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 14)
+custom_minimum_size = Vector2(0, 8)
 layout_mode = 2
 show_percentage = false
 
 [node name="SsrLabel" type="Label" parent="Margin/VBox/PityPanel/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 19
+theme_type_variation = &"Caption"
+theme_override_font_sizes/font_size = 16
 text = "SSR garanti"
 
 [node name="SsrBar" type="ProgressBar" parent="Margin/VBox/PityPanel/VBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 14)
+custom_minimum_size = Vector2(0, 8)
 layout_mode = 2
 show_percentage = false
+
+[node name="Frame" type="Control" parent="Margin/VBox/PityPanel"]
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("3")
+inset = 3.0
+draw_outline = false
 
 [node name="Message" type="Label" parent="Margin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 19
-theme_override_colors/font_color = Color(0.902, 0.443, 0.376, 1)
+theme_override_font_sizes/font_size = 17
+theme_override_colors/font_color = Color(0.847, 0.149, 0.227, 1)
 horizontal_alignment = 1
 autowrap_mode = 2
 
 [node name="Buttons" type="HBoxContainer" parent="Margin/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 14
 
 [node name="PullButton" type="Button" parent="Margin/VBox/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Invoquer"
+text = "INVOQUER"
 
 [node name="PullX10Button" type="Button" parent="Margin/VBox/Buttons"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Invoquer x10"
+text = "INVOQUER ×10"

@@ -101,7 +101,9 @@ func _refresh() -> void:
 		return
 	_clear(_grid)
 	var ids := _filtered_ids()
-	_header.text = "Guilde — %d / %d guerriers" % [ids.size(), _player.inventory.size()]
+	_header.text = "LA GUILDE"
+	%CountLabel.text = "%d GUERRIER%s AFFICHÉ%s · %d AU TOTAL" % [
+		ids.size(), "S" if ids.size() > 1 else "", "S" if ids.size() > 1 else "", _player.inventory.size()]
 	_empty_label.visible = ids.is_empty()
 	for character_id: String in ids:
 		var card: CharacterCard = CARD_SCENE.instantiate()
@@ -135,35 +137,40 @@ func _show_detail(character_id: String) -> void:
 	_detail_stars.add_theme_color_override("font_color", DataLoader.rarity_color("SSR"))
 
 	var xp_needed := progression.xp_to_next_level(level)
-	var xp_line := "Niveau max" if xp_needed == 0 else "Niveau %d — %d / %d XP" % [level, int(entry.get("xp", 0)), xp_needed]
+	var xp_line := "NIVEAU MAX" if xp_needed == 0 else "NIVEAU %d · %d / %d XP" % [level, int(entry.get("xp", 0)), xp_needed]
 	var lines: PackedStringArray = [
-		"[b]%s[/b]" % xp_line,
+		_section(xp_line),
 		"",
-		"[b]Stats[/b] (base → actuel)",
+		_section("STATS") + "  [color=#96887e](base → actuel)[/color]",
 	]
 	for stat: String in ["atk", "def", "vit", "pv"]:
 		lines.append("%s : %d → [b]%d[/b]" % [stat.to_upper(), int(base.get(stat, 0)), int(stats.get(stat, 0))])
 	var beaten := DataLoader.element_beats(element)
 	if beaten != "":
 		lines.append("")
-		lines.append("[color=#9a95b8]Fort contre %s[/color]" % beaten)
+		lines.append("[color=#96887e]Fort contre[/color] %s" % beaten)
 	var skill: Dictionary = data.get("skill", {})
 	lines.append("")
+	lines.append(_section("COMPÉTENCE"))
 	lines.append("[b]%s[/b]" % skill.get("name", "—"))
 	lines.append(str(skill.get("description", "")))
 	var unlocks := progression.get_unlocks(stars)
 	lines.append("")
-	lines.append("[b]Paliers de doublons[/b]")
+	lines.append(_section("PALIERS DE DOUBLONS"))
 	if unlocks.is_empty():
-		lines.append("[color=#9a95b8]Aucun palier de compétence débloqué.[/color]")
+		lines.append("[color=#96887e]Aucun palier de compétence débloqué.[/color]")
 	for unlock: String in unlocks:
 		lines.append("• %s" % unlock)
 	if stars < progression.max_stars:
-		lines.append("[color=#9a95b8]Prochain palier : %d★ (+%d%% de stats)[/color]" % [
+		lines.append("[color=#96887e]Prochain palier : %d★ (+%d%% de stats)[/color]" % [
 			stars + 1, roundi(progression.get_star_bonus_pct(stars + 1))])
 
 	_detail_body.text = "\n".join(lines)
 	_detail.show()
+
+## Intertitre doré en capitales, comme les cartouches des écrans de référence.
+func _section(title: String) -> String:
+	return "[color=#e3d3a8][b]%s[/b][/color]" % title
 
 ## Vide un conteneur immédiatement : queue_free() seul laisse les enfants dans l'arbre
 ## jusqu'à la fin de la frame, ce qui fausserait le comptage juste après.

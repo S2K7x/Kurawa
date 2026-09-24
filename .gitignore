@@ -1,19 +1,5 @@
-# Godot 4+
+# Cache d'import Godot
 .godot/
-.import/
-export.cfg
-export_presets.cfg
-*.translation
 
-# Mono-specific
-.mono/
-data_*/
-mono_crash.*.json
-
-# System / editor
-.DS_Store
-*.tmp
-
-# Exports
-/build/
-/export/
+# Références visuelles (mockups tiers) : gardées en local, pas redistribuées avec le dépôt
+Design-Style/

@@ -283,7 +283,7 @@ func finish_ui_tests() -> void:
 	var starter_card: CharacterCard = grid.get_child(0)
 	check(starter_card.character_id != "", "carte liée à un guerrier (%s)" % starter_card.character_id)
 	inventory._show_detail(starter_card.character_id)
-	check(inventory._detail.visible and inventory._detail_body.text.contains("Stats"),
+	check(inventory._detail.visible and inventory._detail_body.text.contains("STATS"),
 		"la fiche détaillée s'ouvre au clic sur une carte")
 
 	var results: Array = _main.player.summon(true)

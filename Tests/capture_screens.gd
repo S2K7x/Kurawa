@@ -30,24 +30,39 @@ func _process(_delta: float) -> bool:
 		6:
 			var results: Array = _main.player.summon(true)
 			_main.get_node("%ScreenHost").get_child(0)._reveal.start(results)
-		70:
+		200:
 			_shot("02_revelation")
-		72:
+		206:
 			_main.get_node("%ScreenHost").get_child(0)._reveal._show_summary()
-		80:
+		260:
 			_shot("03_recap_x10")
 			_main.get_node("%ScreenHost").get_child(0)._reveal._close()
 			_main.get_node("%GuildNav").button_pressed = true
 			_main._show(_main.get_node("%ScreenHost").get_child(1))
-		86:
+		266:
 			_shot("04_guilde")
 			var inventory: Node = _main.get_node("%ScreenHost").get_child(1)
 			var grid: GridContainer = inventory.get_node("%Grid")
 			if grid.get_child_count() > 0:
 				inventory._show_detail(grid.get_child(0).character_id)
-		92:
+		272:
 			_shot("05_fiche")
-		98:
+		278:
+			# Une révélation SSR forcée : c'est l'effet le plus spectaculaire, il doit être relu.
+			var ssr: Dictionary = {}
+			for character: Dictionary in DataLoader.characters_db().get("characters", []):
+				if character.get("rarity") == "SSR":
+					ssr = character
+					break
+			var inventory_screen: Node = _main.get_node("%ScreenHost").get_child(1)
+			inventory_screen._detail.hide()
+			_main.get_node("%SummonNav").button_pressed = true
+			_main._show(_main.get_node("%ScreenHost").get_child(0))
+			_main.get_node("%ScreenHost").get_child(0)._reveal.start([
+				{"character": ssr, "rarity": "SSR", "is_new": true, "stars": 1, "or_bonus": 0}])
+		420:
+			_shot("06_ssr")
+		426:
 			print("\n".join(_shots))
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(SAVE_PATH))
 			quit(0)

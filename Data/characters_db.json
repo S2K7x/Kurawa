@@ -22,15 +22,15 @@
   "rarities": {
     "R": {
       "drop_rate": 0.92,
-      "color": "#4a90d9"
+      "color": "#7d93a8"
     },
     "SR": {
       "drop_rate": 0.065,
-      "color": "#9b59b6"
+      "color": "#a663d6"
     },
     "SSR": {
       "drop_rate": 0.015,
-      "color": "#f5c518"
+      "color": "#e9c25c"
     }
   },
   "card_aspect_ratio": "2:3",

@@ -8,12 +8,12 @@ extends Control
 signal closed
 
 const CARD_SCENE := preload("res://Scenes/CharacterCard.tscn")
-const REVEAL_CARD_SIZE := Vector2(304, 456)
+const REVEAL_CARD_SIZE := Vector2(352, 528)
 const SUMMARY_CARD_SIZE := Vector2(148, 222)
 
 ## Durée de l'effet d'arrivée, par rareté : plus c'est rare, plus ça dure.
 const REVEAL_TIME := {"R": 0.28, "SR": 0.5, "SSR": 0.85}
-const FLASH_ALPHA := {"R": 0.18, "SR": 0.4, "SSR": 0.75}
+const FLASH_ALPHA := {"R": 0.14, "SR": 0.3, "SSR": 0.5}
 
 @onready var _flash: ColorRect = %Flash
 @onready var _reveal: VBoxContainer = %Reveal
@@ -22,6 +22,7 @@ const FLASH_ALPHA := {"R": 0.18, "SR": 0.4, "SSR": 0.75}
 @onready var _note: Label = %Note
 @onready var _summary: MarginContainer = %Summary
 @onready var _grid: GridContainer = %Grid
+@onready var _burst: RevealBurst = %Burst
 
 var _results: Array = []
 var _index: int = 0
@@ -76,6 +77,8 @@ func _play_reveal(card: Control, rarity: String, color: Color) -> void:
 	var duration: float = REVEAL_TIME.get(rarity, 0.3)
 
 	_flash.color = Color(color, float(FLASH_ALPHA.get(rarity, 0.2)))
+	_burst.configure(rarity, color, _index)
+	_burst.progress = 0.0
 	card.scale = Vector2(0.55, 0.55)
 	card.modulate.a = 0.0
 
@@ -87,6 +90,8 @@ func _play_reveal(card: Control, rarity: String, color: Color) -> void:
 	_tween.tween_property(card, "modulate:a", 1.0, duration * 0.5)
 	_tween.tween_property(card, "scale", Vector2.ONE, duration) \
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_tween.tween_property(_burst, "progress", 1.0, duration * 1.3) \
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_tween.chain().tween_callback(func() -> void: _busy = false)
 
 func _advance() -> void:
@@ -109,6 +114,7 @@ func _show_summary() -> void:
 		return
 	_busy = false
 	_reveal.hide()
+	_burst.progress = 0.0
 	%SkipButton.hide()
 	_flash.color.a = 0.0
 	_clear(_grid)
@@ -121,6 +127,7 @@ func _show_summary() -> void:
 
 func _close() -> void:
 	hide()
+	_burst.progress = 0.0
 	_results = []
 	closed.emit()
 

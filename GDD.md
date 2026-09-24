@@ -122,6 +122,10 @@ Une jauge d'**énergie/stamina** limite le nombre de combats joués par session,
 
 ## Direction artistique
 
+**Langage visuel retenu (Phase 2) :** noir d'encre, cramoisi de guilde et liserés or pâle ;
+titres en serif à capitales (Cinzel), cadres gravés à équerres d'angle, cartes façon TCG.
+Références dans `Design-Style/`, implémentation dans `Scripts/Style.gd`.
+
 **UI (menus, écran d'accueil) :** ambiance sombre thématique "guilde/Brèche" — mais les personnages et effets de combat restent colorés et vifs. Contraste volontaire entre un cadre sombre et des héros éclatants, plutôt qu'une palette uniformément sombre ou uniformément vive.
 
 ## Format & plateformes

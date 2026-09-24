@@ -48,6 +48,11 @@ Kurawa/
 │   ├── SummonReveal.gd     # révélation des tirages (effets par rareté)
 │   ├── InventoryGrid.gd    # galerie + filtres + fiche détaillée
 │   ├── CharacterCard.gd    # carte de guerrier réutilisable
+│   ├── Style.gd            # palette et fabriques de styles (source unique de l'habillage)
+│   ├── SigilBackground.gd  # fond commun : sceau en filigrane + vignette
+│   ├── OrnateFrame.gd      # cadre gravé (liseré + équerres d'angle)
+│   ├── BreachPortal.gd     # la Brèche dessinée (anneaux runiques + déchirure)
+│   ├── RevealBurst.gd      # gerbe de lumière par rareté à la révélation
 │   └── CombatManager.gd    # combat au tour par tour (Vitesse) + IA tactique — Phase 3
 ├── Tests/
 │   ├── run_tests.gd        # tests headless (voir « Lancer les tests »)
@@ -64,8 +69,13 @@ Kurawa/
 │   └── CombatArena.tscn    # écran de combat — Phase 3
 └── Assets/
     ├── Characters/         # illustrations des personnages
-    ├── UI/                 # éléments d'interface
+    ├── UI/
+    │   ├── kurawa_theme.tres # thème global (couleurs, polices, variations de type)
+    │   └── Fonts/          # Cinzel (titres) + Inter (corps), licences OFL incluses
     └── Audio/              # musiques et SFX
+
+`Design-Style/` (hors dépôt, voir .gitignore) contient les mockups de référence fournis
+par l'auteur : ils définissent la direction visuelle décrite ci-dessous.
 ```
 
 ## Roadmap (voir GDD.md pour le détail)
@@ -87,6 +97,25 @@ Kurawa/
 - `Main` est le **seul** à instancier `PlayerManager` ; chaque écran le reçoit via `setup(player)` et ne crée jamais le sien (une seule sauvegarde en jeu). Un écran expose `setup()` et, si besoin, `on_shown()`
 - Les overlays plein écran (révélation, fiche détaillée) vivent dans un `CanvasLayer` pour passer au-dessus de la barre de ressources et de la navigation. **Attention :** une fois un nœud reparenté dans un `CanvasLayer`, les recherches par nom unique (`%Nom`) ne le trouvent plus — capturer les références en `@onready` avant le reparentage
 - Couleurs d'éléments et de raretés : toujours via `DataLoader.element_color()` / `rarity_color()`, jamais en dur dans l'UI
+
+## Langage visuel
+
+Référence : les mockups de `Design-Style/` (écrans de sélection de légende, gabarit de cartes TCG).
+
+- **Palette** — encre noire (`Style.INK`), cramoisi de guilde (`Style.CRIMSON`), liserés et
+  titres en or pâle (`Style.GOLD`). Le violet de la première maquette a été abandonné
+- **Typographie** — Cinzel (serif à capitales) pour les titres et les noms de guerriers,
+  Inter pour le corps. Passer par les variations de type du thème (`Display`, `Heading`,
+  `Caption`, `CardName`) plutôt que par des tailles en dur
+- **Cadres** — panneaux d'encre à liseré 1px et équerres d'angle (`OrnateFrame`), angles à
+  peine arrondis (2-4px). Jamais de gros arrondis ni d'aplats clairs
+- **Cartes** — format poster, liseré de la rareté, badges rareté/élément en pastilles
+  sombres, bandeau de nom gravé. Illustration = dégradé sombre de l'élément + initiales
+  jusqu'à la Phase 4
+- **Couleurs** — tout l'habillage passe par `Style.gd` ; les couleurs d'éléments et de
+  raretés restent pilotées par `Data/characters_db.json` via `DataLoader`
+- Les décors (sceau de fond, Brèche, gerbe de révélation) sont **dessinés en `_draw()`**,
+  sans aucune texture à produire — ils s'adaptent à toutes les résolutions
 
 ## Lancer les tests
 

@@ -1,115 +1,161 @@
-[gd_resource type="Theme" load_steps=8 format=3 uid="uid://cka1kurawatheme"]
+[gd_resource type="Theme" load_steps=12 format=3 uid="uid://cka1kurawatheme"]
 
-; Thème global : ambiance sombre "guilde / Brèche" (voir GDD.md > Direction artistique).
-; Les illustrations et VFX de personnages restent vifs : ce thème n'habille que le cadre UI.
+[ext_resource type="FontFile" path="res://Assets/UI/Fonts/Inter.ttf" id="1"]
+[ext_resource type="FontFile" path="res://Assets/UI/Fonts/Cinzel.ttf" id="2"]
+
+[sub_resource type="FontVariation" id="Body"]
+base_font = ExtResource("1")
+variation_opentype = {
+"wght": 400
+}
+
+[sub_resource type="FontVariation" id="BodyBold"]
+base_font = ExtResource("1")
+variation_opentype = {
+"wght": 600
+}
+
+[sub_resource type="FontVariation" id="Display"]
+base_font = ExtResource("2")
+variation_opentype = {
+"wght": 500
+}
+spacing_glyph = 3
+
+[sub_resource type="FontVariation" id="DisplayBold"]
+base_font = ExtResource("2")
+variation_opentype = {
+"wght": 700
+}
+spacing_glyph = 2
 
 [sub_resource type="StyleBoxFlat" id="BtnNormal"]
 content_margin_left = 22.0
-content_margin_top = 16.0
+content_margin_top = 15.0
 content_margin_right = 22.0
-content_margin_bottom = 16.0
-bg_color = Color(0.141, 0.122, 0.239, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.286, 0.243, 0.478, 1)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
+content_margin_bottom = 15.0
+bg_color = Color(0.086, 0.035, 0.051, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.396, 0.09, 0.145, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
 
 [sub_resource type="StyleBoxFlat" id="BtnHover"]
 content_margin_left = 22.0
-content_margin_top = 16.0
+content_margin_top = 15.0
 content_margin_right = 22.0
-content_margin_bottom = 16.0
-bg_color = Color(0.204, 0.176, 0.337, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.482, 0.361, 1, 1)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
+content_margin_bottom = 15.0
+bg_color = Color(0.208, 0.051, 0.078, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.89, 0.827, 0.659, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
 
 [sub_resource type="StyleBoxFlat" id="BtnPressed"]
 content_margin_left = 22.0
-content_margin_top = 16.0
+content_margin_top = 15.0
 content_margin_right = 22.0
-content_margin_bottom = 16.0
-bg_color = Color(0.29, 0.216, 0.6, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.58, 0.463, 1, 1)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
+content_margin_bottom = 15.0
+bg_color = Color(0.639, 0.09, 0.161, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.89, 0.827, 0.659, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
 
 [sub_resource type="StyleBoxFlat" id="BtnDisabled"]
 content_margin_left = 22.0
-content_margin_top = 16.0
+content_margin_top = 15.0
 content_margin_right = 22.0
-content_margin_bottom = 16.0
-bg_color = Color(0.098, 0.09, 0.149, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.18, 0.165, 0.259, 1)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
+content_margin_bottom = 15.0
+bg_color = Color(0.055, 0.043, 0.047, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.173, 0.137, 0.145, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
 
 [sub_resource type="StyleBoxFlat" id="PanelSurface"]
 content_margin_left = 18.0
 content_margin_top = 16.0
 content_margin_right = 18.0
 content_margin_bottom = 16.0
-bg_color = Color(0.11, 0.094, 0.188, 1)
+bg_color = Color(0.086, 0.035, 0.051, 0.78)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
-border_color = Color(0.231, 0.196, 0.4, 1)
-corner_radius_top_left = 14
-corner_radius_top_right = 14
-corner_radius_bottom_right = 14
-corner_radius_bottom_left = 14
+border_color = Color(0.353, 0.302, 0.208, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
 
 [sub_resource type="StyleBoxFlat" id="ProgressBg"]
-bg_color = Color(0.098, 0.09, 0.149, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
+bg_color = Color(0.098, 0.075, 0.082, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.267, 0.204, 0.157, 1)
 
 [sub_resource type="StyleBoxFlat" id="ProgressFill"]
-bg_color = Color(0.482, 0.361, 1, 1)
-corner_radius_top_left = 6
-corner_radius_top_right = 6
-corner_radius_bottom_right = 6
-corner_radius_bottom_left = 6
+bg_color = Color(0.639, 0.09, 0.161, 1)
 
 [resource]
-default_font_size = 26
-Button/colors/font_color = Color(0.91, 0.902, 0.949, 1)
-Button/colors/font_disabled_color = Color(0.435, 0.42, 0.522, 1)
-Button/colors/font_hover_color = Color(1, 1, 1, 1)
-Button/colors/font_pressed_color = Color(1, 1, 1, 1)
+default_font = SubResource("Body")
+default_font_size = 24
+Button/colors/font_color = Color(0.925, 0.894, 0.839, 1)
+Button/colors/font_disabled_color = Color(0.384, 0.345, 0.333, 1)
+Button/colors/font_hover_color = Color(0.89, 0.827, 0.659, 1)
+Button/colors/font_pressed_color = Color(1, 0.976, 0.925, 1)
+Button/fonts/font = SubResource("BodyBold")
+Button/font_sizes/font_size = 22
 Button/styles/disabled = SubResource("BtnDisabled")
 Button/styles/hover = SubResource("BtnHover")
 Button/styles/normal = SubResource("BtnNormal")
 Button/styles/pressed = SubResource("BtnPressed")
-Label/colors/font_color = Color(0.91, 0.902, 0.949, 1)
+Label/colors/font_color = Color(0.925, 0.894, 0.839, 1)
 Panel/styles/panel = SubResource("PanelSurface")
 PanelContainer/styles/panel = SubResource("PanelSurface")
 ProgressBar/styles/background = SubResource("ProgressBg")
 ProgressBar/styles/fill = SubResource("ProgressFill")
-RichTextLabel/colors/default_color = Color(0.91, 0.902, 0.949, 1)
+RichTextLabel/colors/default_color = Color(0.925, 0.894, 0.839, 1)
+RichTextLabel/fonts/normal_font = SubResource("Body")
+RichTextLabel/fonts/bold_font = SubResource("BodyBold")
+Display/base_type = &"Label"
+Display/colors/font_color = Color(0.925, 0.894, 0.839, 1)
+Display/colors/font_outline_color = Color(0, 0, 0, 0.6)
+Display/constants/outline_size = 4
+Display/fonts/font = SubResource("Display")
+Display/font_sizes/font_size = 52
+Heading/base_type = &"Label"
+Heading/colors/font_color = Color(0.89, 0.827, 0.659, 1)
+Heading/fonts/font = SubResource("Display")
+Heading/font_sizes/font_size = 28
+Caption/base_type = &"Label"
+Caption/colors/font_color = Color(0.588, 0.533, 0.494, 1)
+Caption/fonts/font = SubResource("Body")
+Caption/font_sizes/font_size = 17
+CardName/base_type = &"Label"
+CardName/colors/font_color = Color(0.925, 0.894, 0.839, 1)
+CardName/fonts/font = SubResource("DisplayBold")
+CardName/font_sizes/font_size = 19
