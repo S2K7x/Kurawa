@@ -187,6 +187,25 @@ Affiche le taux de victoire de chaque combat pour une équipe type à différent
 Lecture : 0% = mur infranchissable · 40-70% = combat tendu · 100% = trop facile. À relancer
 après toute modification de stats, de compétences ou de contenu.
 
+## Exporter
+
+Les presets Mac / Web / iOS sont dans `export_presets.cfg` (portrait, `Tests/` et
+`Design-Style/` exclus des builds). Ils demandent les **templates d'export** de Godot 4.7.2,
+à installer une fois via l'éditeur (Éditeur > Gérer les modèles d'exportation) ou depuis
+[godotengine.org/download](https://godotengine.org/download).
+
+```bash
+/Applications/Godot.app/Contents/MacOS/Godot --headless --path . --export-release "Web"  build/web/index.html
+/Applications/Godot.app/Contents/MacOS/Godot --headless --path . --export-release "Mac"  build/mac/Kurawa.app
+/Applications/Godot.app/Contents/MacOS/Godot --headless --path . --export-release "iOS"  build/ios/Kurawa.xcodeproj
+```
+
+Le build Web est en mono-thread (pas d'isolation cross-origin requise) : il fonctionne
+sur un hébergement statique simple comme itch.io. L'export iOS produit un projet Xcode à
+ouvrir et signer ; l'identifiant de bundle et l'équipe App Store sont à renseigner.
+**Aucun de ces exports n'a encore été lancé** : les templates ne sont pas installés sur
+cette machine.
+
 ## Conventions de code
 
 - GDScript, typage statique quand possible (`var x: int = 0`)
