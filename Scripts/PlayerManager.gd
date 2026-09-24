@@ -24,6 +24,8 @@ var story_progress: Dictionary = {}
 var claimed_first_clear: Dictionary = {}
 # Dernière équipe envoyée au combat, proposée par défaut à la sélection suivante.
 var last_team: Array = []
+# Le tutoriel de première partie n'est montré qu'une fois.
+var tutorial_seen: bool = false
 
 var gacha := GachaSystem.new()
 var stamina := StaminaSystem.new()
@@ -71,6 +73,7 @@ func new_game() -> void:
 	story_progress = {}
 	claimed_first_clear = {}
 	last_team = []
+	tutorial_seen = false
 	gacha.from_dict({})
 	stamina.reset_full()
 	# Personnage de départ garanti, lié à l'histoire (voir GDD.md > Personnage de départ).
@@ -95,6 +98,7 @@ func save_game() -> bool:
 		"story_progress": story_progress,
 		"claimed_first_clear": claimed_first_clear,
 		"last_team": last_team,
+		"tutorial_seen": tutorial_seen,
 		"gacha": gacha.to_dict(),
 		"stamina": stamina.to_dict(),
 	}
@@ -145,6 +149,7 @@ func load_game() -> bool:
 	for character_id: String in data.get("last_team", []):
 		if inventory.has(character_id):
 			last_team.append(character_id)
+	tutorial_seen = bool(data.get("tutorial_seen", false))
 	gacha.from_dict(data.get("gacha", {}))
 	stamina.from_dict(data.get("stamina", {}))
 	state_changed.emit()
@@ -266,6 +271,11 @@ func record_defeat(team_ids: Array) -> void:
 	last_team = team_ids.duplicate()
 	save_game()
 	state_changed.emit()
+
+## Le tutoriel a été vu : on ne le repropose plus (sauf nouvelle partie).
+func mark_tutorial_seen() -> void:
+	tutorial_seen = true
+	save_game()
 
 # --- Énergie ---------------------------------------------------------------------------------
 

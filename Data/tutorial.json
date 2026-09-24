@@ -1,0 +1,35 @@
+{
+  "_comment": "Tutoriel purement mécanique, sans PNJ ni mentor (voir CLAUDE.md > Onboarding) : quelques cartes affichées une seule fois, à la première partie. Chaque étape désigne l'onglet à mettre en avant (`nav`) pour que le joueur relie le texte à l'endroit de l'écran concerné. `nav` vide = message général.",
+  "steps": [
+    {
+      "nav": "",
+      "title": "Maître de guilde",
+      "body": "Ta guilde est jeune, modeste, et vient d'hériter d'une Brèche. Tu ne combats pas toi-même : tu invoques, tu formes, tu envoies."
+    },
+    {
+      "nav": "SummonNav",
+      "title": "La Brèche",
+      "body": "C'est ici que tu appelles tes guerriers. L'invocation ×10 coûte 10% de moins que dix tirages simples et garantit au moins un SR.\n\nLes compteurs affichent le tirage auquel un SR, puis un SSR, te sont garantis."
+    },
+    {
+      "nav": "GuildNav",
+      "title": "Ta guilde",
+      "body": "Tous tes guerriers, filtrables par rareté et par élément. Touche une carte pour sa fiche complète.\n\nUn doublon n'est jamais perdu : il monte le guerrier d'une étoile, ce qui augmente ses stats et, aux paliers 3 et 6, renforce sa compétence."
+    },
+    {
+      "nav": "StoryNav",
+      "title": "Le mode histoire",
+      "body": "Quatre chapitres contre L'Ordre Voracis, la guilde rivale. Chaque chapitre est nettement plus dur que le précédent : tu ne le passeras pas sans monter ton équipe entre deux."
+    },
+    {
+      "nav": "DungeonNav",
+      "title": "Les donjons",
+      "body": "Rejouables à volonté, c'est là que se fait la montée en puissance : Or, XP, et un donjon par élément.\n\nSouviens-toi du cycle : Feu bat Vent, Vent bat Foudre, Foudre bat Eau, Eau bat Feu. Un avantage élémentaire, c'est 50% de dégâts en plus."
+    },
+    {
+      "nav": "",
+      "title": "L'énergie",
+      "body": "Chaque combat coûte de l'énergie, gagné ou perdu. Elle remonte toute seule avec le temps, même jeu fermé — inutile de rester devant l'écran."
+    }
+  ]
+}

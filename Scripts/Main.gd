@@ -11,6 +11,8 @@ const STORY_SCREEN := preload("res://Scenes/StoryScreen.tscn")
 const DUNGEON_SCREEN := preload("res://Scenes/DungeonScreen.tscn")
 const TEAM_SELECT := preload("res://Scenes/TeamSelect.tscn")
 const COMBAT_ARENA := preload("res://Scenes/CombatArena.tscn")
+const TITLE_SCREEN := preload("res://Scenes/TitleScreen.tscn")
+const TUTORIAL := preload("res://Scenes/Tutorial.tscn")
 
 @onready var _screen_host: Control = %ScreenHost
 @onready var _summon_nav: Button = %SummonNav
@@ -25,6 +27,8 @@ var _team_select: Control
 var _arena: Control
 ## Combat demandé par un écran, en attente de la composition d'équipe.
 var _pending_encounter: Dictionary = {}
+var _title_screen: Control
+var _tutorial: Control
 
 func _ready() -> void:
 	add_child(player)
@@ -43,6 +47,7 @@ func _ready() -> void:
 		navs[index].pressed.connect(_show.bind(_screens[index]))
 
 	_show(_screens[0])
+	_build_front_overlay()
 	%RefreshTimer.timeout.connect(_refresh_top_bar)
 	_refresh_top_bar()
 
@@ -118,6 +123,41 @@ func _build_combat_overlay() -> void:
 	overlay.add_child(_arena)
 	_arena.setup(player)
 	_arena.finished.connect(_on_combat_finished)
+
+## Accueil et tutoriel : au-dessus de tout, y compris d'un combat en cours (il n'y en a
+## jamais au lancement, mais l'ordre des calques doit rester sans ambiguïté).
+func _build_front_overlay() -> void:
+	var overlay := CanvasLayer.new()
+	overlay.layer = 12
+	add_child(overlay)
+
+	_tutorial = TUTORIAL.instantiate()
+	overlay.add_child(_tutorial)
+	_tutorial.step_changed.connect(_on_tutorial_step)
+	_tutorial.closed.connect(func() -> void: player.mark_tutorial_seen())
+
+	_title_screen = TITLE_SCREEN.instantiate()
+	overlay.add_child(_title_screen)
+	_title_screen.setup(player)
+	_title_screen.entered.connect(_on_entered)
+
+func _on_entered() -> void:
+	_title_screen.hide()
+	if not player.tutorial_seen:
+		_tutorial.start()
+
+## Le tutoriel amène l'onglet dont il parle au premier plan : le texte et l'écran décrit
+## restent ainsi sous les yeux en même temps.
+func _on_tutorial_step(nav_name: String) -> void:
+	if nav_name == "":
+		return
+	var navs := {"SummonNav": 0, "GuildNav": 1, "StoryNav": 2, "DungeonNav": 3}
+	if not navs.has(nav_name):
+		return
+	var index: int = navs[nav_name]
+	var nav: Button = get_node("%" + nav_name)
+	nav.button_pressed = true
+	_show(_screens[index])
 
 ## Un écran a demandé un combat : on passe d'abord par la composition d'équipe.
 func _on_encounter_requested(encounter: Dictionary) -> void:

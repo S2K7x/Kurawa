@@ -9,6 +9,7 @@ const ECONOMY_PATH := "res://Data/economy.json"
 const ENEMIES_PATH := "res://Data/enemies.json"
 const STORY_PATH := "res://Data/story.json"
 const DUNGEONS_PATH := "res://Data/dungeons.json"
+const TUTORIAL_PATH := "res://Data/tutorial.json"
 
 const FALLBACK_COLOR := Color(1, 1, 1)
 

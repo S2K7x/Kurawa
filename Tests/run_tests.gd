@@ -299,6 +299,7 @@ func finish_ui_tests() -> void:
 	summon._reveal._close()
 	check(not summon._reveal.visible, "la révélation se referme")
 
+	test_onboarding()
 	test_combat_screens(host)
 	_ui_completed = true
 	_main.queue_free()
@@ -482,3 +483,33 @@ func test_combat_screens(host: Node) -> void:
 		check(player.or_de_guilde == or_before, "une défaite ne verse rien")
 	_main._arena._on_continue()
 	check(not _main._arena.visible, "l'arène se referme sur Continuer")
+
+## Accueil et tutoriel : le joueur doit passer par l'écran-titre, voir le tutoriel une seule
+## fois, et le tutoriel doit rester cohérent avec les onglets réellement présents.
+func test_onboarding() -> void:
+	print("Accueil et tutoriel")
+	var player: PlayerManager = _main.player
+	check(_main._title_screen.visible, "l'écran-titre s'affiche au lancement")
+	check(not player.tutorial_seen, "une nouvelle guilde n'a pas encore vu le tutoriel")
+
+	_main._on_entered()
+	check(not _main._title_screen.visible and _main._tutorial.visible,
+		"entrer dans la guilde lance le tutoriel")
+
+	var steps: Array = DataLoader.load_json(DataLoader.TUTORIAL_PATH).get("steps", [])
+	var navs_ok := true
+	for step: Dictionary in steps:
+		var nav_name := str(step.get("nav", ""))
+		navs_ok = navs_ok and (nav_name == "" or _main.has_node("%" + nav_name))
+	check(navs_ok, "chaque étape du tutoriel désigne un onglet qui existe (%d étapes)" % steps.size())
+
+	for i in range(steps.size()):
+		_main._tutorial._advance()
+	check(not _main._tutorial.visible, "le tutoriel se referme à la dernière étape")
+	check(player.tutorial_seen, "le tutoriel est marqué comme vu")
+
+	var reloaded := PlayerManager.new()
+	reloaded.save_path = TEST_SAVE_PATH
+	reloaded.load_or_new_game()
+	check(reloaded.tutorial_seen, "le tutoriel reste vu après rechargement")
+	reloaded.free()
