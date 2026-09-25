@@ -1,6 +1,7 @@
 extends Control
 
-## Écran d'accueil : le blason, le nom du jeu, l'état de la guilde, et l'entrée en jeu.
+## Écran d'accueil : le blason (GuildCrest, dessiné), le nom du jeu en Cinzel, l'état de
+## la guilde, et l'entrée en jeu.
 ## S'affiche au lancement par-dessus la coquille, et sert aussi de point de reprise
 ## (« recommencer une nouvelle guilde »).
 
@@ -17,8 +18,6 @@ func setup(player: PlayerManager) -> void:
 		_refresh()
 
 func _ready() -> void:
-	%Crest.add_theme_stylebox_override("normal", Style.panel(Style.CRIMSON.darkened(0.35), Style.GOLD, 2, 0))
-	%Crest.add_theme_color_override("font_color", Style.GOLD)
 	%StatusPanel.add_theme_stylebox_override("panel", Style.panel(Color(Style.SURFACE, 0.75), Style.GOLD_DIM, 3, 16))
 	_enter.add_theme_stylebox_override("normal", Style.action_button(Style.CRIMSON, Style.GOLD_DIM))
 	_enter.add_theme_stylebox_override("hover", Style.action_button(Style.CRIMSON_BRIGHT, Style.GOLD))
