@@ -32,6 +32,24 @@ var _disadvantage: float = 0.75
 var _max_turns: int = 60
 var _crit_chance: float = 0.15
 var _crit_multiplier: float = 1.5
+var _guard_reduction: float = 0.5
+var _guard_gauge: int = 18
+var _guard_atb: float = 0.25
+var _gauge_max: int = 100
+var _gauge_per_action: int = 8
+var _gauge_per_hit: int = 6
+var _gauge_per_kill: int = 15
+var _ultimate_power: float = 2.2
+var _ultimate_atb: float = 0.3
+var _enrage_turn: int = 40
+var _enrage_bonus: float = 0.5
+
+## Jauge de Brèche de l'équipe du joueur : se remplit en agissant et en encaissant, et
+## débloque la Percée (voir GDD.md > Système de combat).
+var breach_gauge: int = 0
+var _enraged: bool = false
+# Garde-fou contre les ripostes qui se répondent en boucle.
+var _countering: bool = false
 
 func _init() -> void:
 	rng.randomize()
@@ -45,6 +63,17 @@ func _init() -> void:
 	_max_turns = int(config.get("max_turns", _max_turns))
 	_crit_chance = float(config.get("crit_chance", _crit_chance))
 	_crit_multiplier = float(config.get("crit_multiplier", _crit_multiplier))
+	_guard_reduction = float(config.get("guard_damage_reduction", _guard_reduction))
+	_guard_gauge = int(config.get("guard_gauge_gain", _guard_gauge))
+	_guard_atb = float(config.get("guard_atb_gain", _guard_atb))
+	_gauge_max = int(config.get("breach_gauge_max", _gauge_max))
+	_gauge_per_action = int(config.get("breach_gauge_per_action", _gauge_per_action))
+	_gauge_per_hit = int(config.get("breach_gauge_per_hit_taken", _gauge_per_hit))
+	_gauge_per_kill = int(config.get("breach_gauge_per_kill", _gauge_per_kill))
+	_ultimate_power = float(config.get("breach_ultimate_power", _ultimate_power))
+	_ultimate_atb = float(config.get("breach_ultimate_atb_boost", _ultimate_atb))
+	_enrage_turn = int(config.get("boss_enrage_turn", _enrage_turn))
+	_enrage_bonus = float(config.get("boss_enrage_attack_bonus", _enrage_bonus))
 
 # --- Fabrication des combattants ---------------------------------------------------------------
 
@@ -93,6 +122,8 @@ func start(ally_team: Array[Combatant], enemy_team: Array[Combatant]) -> void:
 	enemies = enemy_team
 	events.clear()
 	turn_count = 0
+	breach_gauge = 0
+	_enraged = false
 	for unit: Combatant in allies + enemies:
 		unit.atb = 0.0
 	_log({"kind": "combat_start", "allies": _names(allies), "enemies": _names(enemies)})
@@ -122,8 +153,10 @@ func begin_turn() -> Combatant:
 		return null
 	turn_count += 1
 	actor.atb -= _atb_threshold
+	actor.guarding = false # la garde ne tient que jusqu'au tour suivant de son porteur
 	if actor.skill_cooldown > 0:
 		actor.skill_cooldown -= 1
+	_check_enrage()
 
 	_apply_turn_start_effects(actor)
 	if not actor.is_alive():
@@ -151,12 +184,58 @@ func act(actor: Combatant, action: String, target: Combatant = null) -> void:
 				_basic_attack(actor, target)
 			else:
 				_resolve_skill(actor, actor.skill, target, false)
+		"guard":
+			_guard(actor)
+		"ultimate":
+			if can_use_ultimate(actor):
+				_breach_ultimate(actor)
+			else:
+				_basic_attack(actor, target)
 		"pass":
 			_log({"kind": "pass", "actor": actor.name})
 		_:
 			_basic_attack(actor, target)
+	if actor.is_ally:
+		_add_gauge(_gauge_per_action)
 	actor.tick_statuses()
 	_cleanup_dead()
+
+## Se mettre en garde : on encaisse moitié moins jusqu'à son prochain tour, on regagne un peu
+## d'ATB et on charge la Brèche. C'est le choix des tours où frapper ne sert à rien.
+func _guard(actor: Combatant) -> void:
+	actor.guarding = true
+	actor.atb += _atb_threshold * _guard_atb
+	if actor.is_ally:
+		_add_gauge(_guard_gauge)
+	_log({"kind": "guard", "actor": actor.name})
+
+func can_use_ultimate(actor: Combatant) -> bool:
+	return actor.is_ally and breach_gauge >= _gauge_max
+
+## Percée de la Brèche : l'attaque d'équipe débloquée par la jauge. Frappe tout le camp adverse
+## à l'élément du lanceur et relance les alliés dans l'ordre des tours.
+func _breach_ultimate(actor: Combatant) -> void:
+	breach_gauge = 0
+	var victims := _living(enemies if actor.is_ally else allies)
+	var total := 0
+	for victim: Combatant in victims:
+		total += _strike(actor, victim, _ultimate_power, 0.25, {})
+	for ally: Combatant in _living(allies):
+		ally.atb += _atb_threshold * _ultimate_atb
+	_log({"kind": "ultimate", "actor": actor.name, "targets": _names(victims), "damage": total})
+	_cleanup_dead()
+
+func _add_gauge(amount: int) -> void:
+	breach_gauge = clampi(breach_gauge + amount, 0, _gauge_max)
+
+## Les boss ne laissent pas éterniser : passé un certain nombre de tours, ils frappent plus fort.
+func _check_enrage() -> void:
+	if _enraged or turn_count < _enrage_turn:
+		return
+	_enraged = true
+	for foe: Combatant in _living(enemies):
+		foe.add_status({"type": "atk_up", "duration": 9999, "value": _enrage_bonus})
+	_log({"kind": "enrage", "turn": turn_count})
 
 ## Tour joué par l'IA : elle lance sa compétence dès qu'elle en tire plus qu'une attaque,
 ## et vise la cible la plus rentable (voir _choose_target).
@@ -165,9 +244,17 @@ func act_ai(actor: Combatant) -> void:
 	if opponents.is_empty():
 		_log({"kind": "pass", "actor": actor.name})
 		return
-	var use_skill := _should_use_skill(actor, opponents)
 	var target := _choose_target(actor, opponents)
-	act(actor, "skill" if use_skill else "attack", target)
+	# La Percée d'abord : une jauge pleine ne sert à rien si le combat se termine avant.
+	if can_use_ultimate(actor) and opponents.size() >= 2:
+		act(actor, "ultimate", target)
+		return
+	# En très mauvaise posture et sans compétence prête, mieux vaut encaisser à moitié.
+	var cornered := actor.hp < actor.max_hp * 0.25 and actor.skill_cooldown > 0
+	if cornered and actor.is_ally:
+		act(actor, "guard", target)
+		return
+	act(actor, "skill" if _should_use_skill(actor, opponents) else "attack", target)
 
 ## Résout le combat entier en laissant l'IA jouer les deux camps. Sert aux tests et à
 ## l'équilibrage (et, plus tard, au bouton « auto » de l'écran de combat).
@@ -178,6 +265,30 @@ func auto_resolve() -> int:
 			continue
 		act_ai(actor)
 	return result()
+
+## Qui va jouer, et dans quel ordre, si personne ne touche à l'ATB : simulation sur une copie
+## des jauges, sans rien modifier. C'est ce qui rend l'ATB lisible — et donc jouable — pour le
+## joueur (voir Epic Seven / Summoners War, où l'ordre des tours est affiché en permanence).
+func turn_order_preview(count: int = 6) -> Array[Combatant]:
+	var order: Array[Combatant] = []
+	var units := _living(allies) + _living(enemies)
+	if units.is_empty():
+		return order
+	var gauges := {}
+	for unit: Combatant in units:
+		gauges[unit] = unit.atb
+	var guard := 0
+	while order.size() < count and guard < 20000:
+		guard += 1
+		var ready: Combatant = null
+		for unit: Combatant in units:
+			gauges[unit] = float(gauges[unit]) + unit.vit() * _atb_speed_factor
+			if float(gauges[unit]) >= _atb_threshold and (ready == null or float(gauges[unit]) > float(gauges[ready])):
+				ready = unit
+		if ready != null:
+			order.append(ready)
+			gauges[ready] = float(gauges[ready]) - _atb_threshold
+	return order
 
 # --- ATB & début de tour -----------------------------------------------------------------------
 
@@ -275,6 +386,8 @@ func _strike(actor: Combatant, victim: Combatant, power: float, defense_ignore: 
 	var mitigation := _defense_constant / (_defense_constant + defense)
 	var raw := actor.atk() * power * mitigation * element_multiplier(actor.element, victim.element)
 	raw *= 1.0 - victim.damage_reduction()
+	if victim.guarding:
+		raw *= 1.0 - _guard_reduction
 	var critical := rng.randf() < _crit_chance
 	if critical:
 		raw *= _crit_multiplier
@@ -282,6 +395,17 @@ func _strike(actor: Combatant, victim: Combatant, power: float, defense_ignore: 
 	var dealt := victim.take_damage(maxi(roundi(raw), 1))
 	if critical:
 		_log({"kind": "critical", "actor": actor.name, "target": victim.name, "damage": dealt})
+	if victim.is_ally:
+		_add_gauge(_gauge_per_hit)
+	if not victim.is_alive() and actor.is_ally:
+		_add_gauge(_gauge_per_kill)
+	# Riposte : la cible rend le coup immédiatement, une seule fois par frappe et sans
+	# se riposter elle-même (sinon deux ripostes se renverraient la balle à l'infini).
+	if victim.is_alive() and victim.has_status("counter") and not _countering:
+		_countering = true
+		var back := _strike(victim, actor, victim.status_value("counter"), 0.0, {})
+		_countering = false
+		_log({"kind": "counter", "actor": victim.name, "target": actor.name, "damage": back})
 	return dealt
 
 ## Cycle Feu > Vent > Foudre > Eau > Feu (characters_db.json > elements.beats).
@@ -306,6 +430,18 @@ func _apply_skill_effects(actor: Combatant, skill: Dictionary, targets: Array[Co
 		if rng.randf() > float(effect.get("chance", 1.0)):
 			continue
 		match type:
+			"atb_boost", "atb_cut":
+				var direction := 1.0 if type == "atb_boost" else -1.0
+				for unit: Combatant in _effect_targets(actor, effect, targets, allies_of_actor):
+					if not unit.is_alive():
+						continue
+					unit.atb = maxf(unit.atb + direction * _atb_threshold * float(effect.get("value", 0.0)), 0.0)
+					_log({"kind": type, "actor": unit.name})
+			"cleanse", "strip":
+				var families: Array = Combatant.HARMFUL if type == "cleanse" else Combatant.BENEFICIAL
+				for unit: Combatant in _effect_targets(actor, effect, targets, allies_of_actor):
+					if unit.remove_statuses(families) > 0:
+						_log({"kind": type, "actor": unit.name})
 			"extra_turn":
 				actor.atb += _atb_threshold
 				_log({"kind": "extra_turn", "actor": actor.name})

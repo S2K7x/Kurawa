@@ -32,7 +32,7 @@
     "max_star_duplicate_or": 500
   },
   "combat": {
-    "_comment": "Règles chiffrées du combat (Phase 3). Dégâts d'une frappe = power × ATK × defense_constant / (defense_constant + DEF_effective) × multiplicateur élémentaire, puis coup critique éventuel, puis ±variance_pct. L'ordre de passage suit une jauge ATB remplie par la VIT. Les critiques sont là pour que deux équipes de force voisine ne donnent pas toujours le même vainqueur (sans eux, les taux de victoire mesurés étaient soit 0%, soit 100%).",
+    "_comment": "Règles chiffrées du combat (Phase 3, approfondi en Phase 5). Dégâts d'une frappe = power × ATK × defense_constant / (defense_constant + DEF_effective) × multiplicateur élémentaire, puis coup critique éventuel, puis ±variance_pct. L'ordre de passage suit une jauge ATB remplie par la VIT, que les compétences peuvent pousser (atb_boost) ou retenir (atb_cut) — c'est le principal levier tactique. La Brèche accumule une jauge d'équipe qui débloque une Percée.",
     "team_size": 3,
     "element_advantage_multiplier": 1.5,
     "element_disadvantage_multiplier": 0.75,
@@ -42,7 +42,18 @@
     "variance_pct": 5,
     "atb_threshold": 1000,
     "atb_speed_factor": 1.0,
-    "max_turns": 60
+    "max_turns": 60,
+    "guard_damage_reduction": 0.5,
+    "guard_gauge_gain": 18,
+    "guard_atb_gain": 0.25,
+    "breach_gauge_max": 100,
+    "breach_gauge_per_action": 8,
+    "breach_gauge_per_hit_taken": 6,
+    "breach_gauge_per_kill": 15,
+    "breach_ultimate_power": 2.2,
+    "breach_ultimate_atb_boost": 0.3,
+    "boss_enrage_turn": 40,
+    "boss_enrage_attack_bonus": 0.5
   },
   "rewards": {
     "_comment": "Récompenses de base d'un combat gagné, multipliées par le contenu joué (voir Data/story.json et Data/dungeons.json).",

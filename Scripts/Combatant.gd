@@ -28,6 +28,8 @@ var atb: float = 0.0
 var statuses: Array[Dictionary] = []
 ## Compétence en cours de charge ({} si aucune) : elle se déclenchera au prochain tour.
 var pending_skill: Dictionary = {}
+## En garde : encaisse moitié moins jusqu'à son prochain tour (voir CombatManager.act).
+var guarding: bool = false
 
 func is_alive() -> bool:
 	return hp > 0
@@ -46,11 +48,16 @@ func has_status(type: String) -> bool:
 			return true
 	return false
 
+## Altérations bénéfiques d'un côté, néfastes de l'autre : le nettoyage et le dissipement
+## ont besoin de savoir laquelle est laquelle.
+const HARMFUL := ["burn", "stun", "def_down", "atk_down"]
+const BENEFICIAL := ["atk_up", "speed_up", "damage_reduction", "dodge", "empower", "heal_per_turn", "counter"]
+
 func atk() -> int:
-	return roundi(base_atk * (1.0 + status_value("atk_up")))
+	return roundi(base_atk * (1.0 + status_value("atk_up") - minf(status_value("atk_down"), 0.7)))
 
 func def() -> int:
-	return base_def
+	return roundi(base_def * (1.0 - minf(status_value("def_down"), 0.7)))
 
 func vit() -> float:
 	return base_vit * (1.0 + status_value("speed_up"))
@@ -72,6 +79,18 @@ func consume_dodge() -> bool:
 				statuses.erase(status)
 			return true
 	return false
+
+## Retire les altérations d'une famille. Retourne le nombre d'altérations retirées.
+func remove_statuses(types: Array) -> int:
+	var kept: Array[Dictionary] = []
+	var removed := 0
+	for status: Dictionary in statuses:
+		if types.has(status.get("type", "")):
+			removed += 1
+		else:
+			kept.append(status)
+	statuses = kept
+	return removed
 
 func add_status(status: Dictionary) -> void:
 	# Une altération déjà présente est rafraîchie plutôt qu'empilée : pas de cumul infini.

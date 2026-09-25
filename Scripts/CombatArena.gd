@@ -19,7 +19,7 @@ var step_delay: float = 0.55
 @onready var _ally_row: HBoxContainer = %AllyRow
 @onready var _log: RichTextLabel = %Log
 @onready var _actor_label: Label = %ActorLabel
-@onready var _actions: HBoxContainer = %Actions
+@onready var _actions: GridContainer = %Actions
 @onready var _result: Control = %Result
 
 var _player: PlayerManager
@@ -40,7 +40,12 @@ func _ready() -> void:
 	%LogPanel.add_theme_stylebox_override("panel", Style.panel(Color(Style.INK_DEEP, 0.72), Style.GOLD_DIM, 3, 14))
 	%AttackButton.pressed.connect(_on_attack)
 	%SkillButton.pressed.connect(_on_skill)
-	%PassButton.pressed.connect(_on_pass)
+	%GuardButton.pressed.connect(_on_guard)
+	%UltimateButton.pressed.connect(_on_ultimate)
+	# La Percée est l'action spectaculaire : elle se signale avant même d'être lisible.
+	%UltimateButton.add_theme_stylebox_override("normal", Style.action_button(Style.CRIMSON, Style.GOLD))
+	%UltimateButton.add_theme_stylebox_override("hover", Style.action_button(Style.CRIMSON_BRIGHT, Style.GOLD))
+	%GaugeBar.add_theme_stylebox_override("fill", _gauge_fill())
 	%AutoButton.toggled.connect(_on_auto_toggled)
 	%FleeButton.pressed.connect(_on_flee)
 	%ContinueButton.pressed.connect(_on_continue)
@@ -124,6 +129,8 @@ func _prompt_player() -> void:
 	%SkillButton.disabled = _current_actor.skill_cooldown > 0
 	%SkillButton.text = "COMPÉTENCE" if _current_actor.skill_cooldown == 0 \
 		else "COMPÉTENCE (%d)" % _current_actor.skill_cooldown
+	%SkillButton.tooltip_text = str(_current_actor.skill.get("description", ""))
+	%UltimateButton.disabled = not _combat.can_use_ultimate(_current_actor)
 	if _target == null or not _target.is_alive():
 		var living := _combat._living(_combat.enemies)
 		_target = null if living.is_empty() else living[0]
@@ -147,8 +154,16 @@ func _on_attack() -> void:
 func _on_skill() -> void:
 	_play("skill")
 
-func _on_pass() -> void:
-	_play("pass")
+func _on_guard() -> void:
+	_play("guard")
+
+func _on_ultimate() -> void:
+	_play("ultimate")
+
+func _gauge_fill() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Style.GOLD
+	return style
 
 func _on_auto_toggled(pressed: bool) -> void:
 	_auto = pressed
@@ -175,6 +190,8 @@ func _on_unit_selected(unit: Combatant) -> void:
 
 func _flush() -> void:
 	%TurnLabel.text = "TOUR %d" % _combat.turn_count
+	_refresh_turn_order()
+	_refresh_gauge()
 	while _logged_events < _combat.events.size():
 		var event: Dictionary = _combat.events[_logged_events]
 		var line := _describe(event)
@@ -218,6 +235,50 @@ func _widget_named(unit_name: String) -> CombatUnit:
 			return _widgets[unit]
 	return null
 
+## Bandeau d'ordre des tours : sans lui, l'ATB est une boîte noire et le joueur ne peut pas
+## planifier. C'est ce qui transforme « cliquer sur attaquer » en décision (cf. Epic Seven).
+func _refresh_turn_order() -> void:
+	var host: HBoxContainer = %TurnOrder
+	for child: Node in host.get_children():
+		host.remove_child(child)
+		child.queue_free()
+	if _combat == null:
+		return
+	for index in range(_combat.turn_order_preview(7).size()):
+		var unit: Combatant = _combat.turn_order_preview(7)[index]
+		host.add_child(_turn_chip(unit, index == 0))
+
+func _turn_chip(unit: Combatant, is_next: bool) -> Label:
+	var chip := Label.new()
+	chip.text = _initials(unit.name)
+	chip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	chip.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	chip.custom_minimum_size = Vector2(40, 34)
+	chip.add_theme_font_size_override("font_size", 15)
+	var accent := DataLoader.element_color(unit.element)
+	chip.add_theme_color_override("font_color", Style.TEXT if unit.is_ally else Color(accent, 0.95))
+	var style := Style.panel(Color(Style.SURFACE, 0.9) if unit.is_ally else Color(Style.CRIMSON_DEEP, 0.75),
+		Style.GOLD if is_next else Color(Style.GOLD_DIM, 0.6), 2, 0)
+	style.set_border_width_all(2 if is_next else 1)
+	chip.add_theme_stylebox_override("normal", style)
+	return chip
+
+func _initials(unit_name: String) -> String:
+	var initials := ""
+	for part: String in unit_name.split(" ", false):
+		initials += part.substr(0, 1).to_upper()
+	return initials
+
+func _refresh_gauge() -> void:
+	if _combat == null:
+		return
+	%GaugeBar.max_value = _combat._gauge_max
+	%GaugeBar.value = _combat.breach_gauge
+	%GaugeLabel.text = "BRÈCHE %d / %d%s" % [_combat.breach_gauge, _combat._gauge_max,
+		"  ·  PERCÉE PRÊTE" if _combat.breach_gauge >= _combat._gauge_max else ""]
+	%GaugeLabel.add_theme_color_override("font_color",
+		Style.GOLD if _combat.breach_gauge >= _combat._gauge_max else Style.TEXT_MUTED)
+
 func _refresh_widgets() -> void:
 	for unit: Combatant in _widgets:
 		var widget: CombatUnit = _widgets[unit]
@@ -226,6 +287,9 @@ func _refresh_widgets() -> void:
 func _set_actions_enabled(enabled: bool) -> void:
 	for button: Button in _actions.get_children():
 		button.disabled = not enabled
+	if enabled and _combat != null and _current_actor != null:
+		%UltimateButton.disabled = not _combat.can_use_ultimate(_current_actor)
+		%SkillButton.disabled = _current_actor.skill_cooldown > 0
 	if not enabled:
 		_actor_label.text = " "
 
@@ -254,6 +318,24 @@ func _describe(event: Dictionary) -> String:
 			return "[color=#e3d3a8]%s prépare %s…[/color]" % [actor, event.get("skill", "")]
 		"extra_turn":
 			return "[color=#e3d3a8]%s enchaîne immédiatement[/color]" % actor
+		"guard":
+			return "[color=#96887e]%s se met en garde[/color]" % actor
+		"ultimate":
+			return "[color=#e3d3a8][b]PERCÉE DE LA BRÈCHE[/b] — %s déchire %s — [b]%d[/b][/color]" % [
+				actor, ", ".join(event.get("targets", [])), int(event.get("damage", 0))]
+		"counter":
+			return "[color=#e3d3a8]%s riposte sur %s — [b]%d[/b][/color]" % [actor,
+				event.get("target", ""), int(event.get("damage", 0))]
+		"atb_boost":
+			return "[color=#4e9a63]%s avance dans l'ordre des tours[/color]" % actor
+		"atb_cut":
+			return "[color=#d8263a]%s recule dans l'ordre des tours[/color]" % actor
+		"cleanse":
+			return "[color=#4e9a63]%s est purifié[/color]" % actor
+		"strip":
+			return "[color=#d8263a]%s perd ses renforts[/color]" % actor
+		"enrage":
+			return "[color=#d8263a][b]L'ennemi entre en rage ![/b][/color]"
 		"defeated":
 			return "[color=#d8263a]%s tombe.[/color]" % actor
 		"pass":

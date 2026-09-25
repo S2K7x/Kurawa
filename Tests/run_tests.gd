@@ -437,6 +437,89 @@ func test_combat() -> void:
 	check(ai._choose_target(attacker, [vulnerable, finishable] as Array[Combatant]) == finishable,
 		"l'IA achève une cible à portée de mort avant de chercher l'avantage")
 
+	# --- Profondeur tactique (Phase 5) ---------------------------------------------------------
+	# La garde : encaisser à moitié, charger la Brèche, et regagner un peu d'ATB.
+	var guard_combat := CombatManager.new()
+	guard_combat.rng.seed = 11
+	var hitter := _combatant("Cogneur", "Feu", 200, 50, 100, 900, false)
+	var guardian := _combatant("Gardien", "Feu", 100, 100, 100, 900, true)
+	guard_combat.start([guardian] as Array[Combatant], [hitter] as Array[Combatant])
+	guard_combat._basic_attack(hitter, guardian)
+	var open_damage: int = guardian.max_hp - guardian.hp
+	guardian.hp = guardian.max_hp
+	guard_combat.act(guardian, "guard")
+	guard_combat._basic_attack(hitter, guardian)
+	var guarded_damage: int = guardian.max_hp - guardian.hp
+	check(guarded_damage < open_damage, "la garde réduit les dégâts subis (%d -> %d)" % [open_damage, guarded_damage])
+	check(guard_combat.breach_gauge > 0, "la garde charge la jauge de Brèche")
+
+	# La Percée : disponible à jauge pleine, elle frappe tout le camp adverse et relance l'équipe.
+	var ult := CombatManager.new()
+	ult.rng.seed = 12
+	var leader := _combatant("Meneur", "Feu", 180, 80, 100, 900, true)
+	var foe_a := _combatant("Sbire A", "Vent", 60, 40, 90, 800, false)
+	var foe_b := _combatant("Sbire B", "Vent", 60, 40, 90, 800, false)
+	ult.start([leader] as Array[Combatant], [foe_a, foe_b] as Array[Combatant])
+	check(not ult.can_use_ultimate(leader), "la Percée est indisponible jauge vide")
+	ult.breach_gauge = 100
+	check(ult.can_use_ultimate(leader), "la Percée s'ouvre à jauge pleine")
+	ult.act(leader, "ultimate")
+	check(foe_a.hp < foe_a.max_hp and foe_b.hp < foe_b.max_hp, "la Percée touche toute l'équipe adverse")
+	check(ult.breach_gauge < 100, "la Percée consomme la jauge")
+
+	# Manipulation de l'ATB : pousser un allié, retenir un ennemi.
+	var atb := CombatManager.new()
+	atb.rng.seed = 13
+	var pusher := _combatant("Meneuse", "Vent", 100, 50, 100, 900, true)
+	var slowed := _combatant("Ralenti", "Vent", 100, 50, 100, 900, false)
+	atb.start([pusher] as Array[Combatant], [slowed] as Array[Combatant])
+	slowed.atb = 500.0
+	atb._apply_skill_effects(pusher, {"effects": [
+		{"type": "atb_cut", "target": "target", "chance": 1.0, "value": 0.3}]},
+		[slowed] as Array[Combatant], 0)
+	check(slowed.atb < 500.0, "atb_cut retient la jauge de la cible (%.0f)" % slowed.atb)
+	atb._apply_skill_effects(pusher, {"effects": [
+		{"type": "atb_boost", "target": "ally_all", "chance": 1.0, "value": 0.5}]},
+		[] as Array[Combatant], 0)
+	check(pusher.atb > 0.0, "atb_boost pousse la jauge de l'équipe (%.0f)" % pusher.atb)
+
+	# Nettoyage et dissipement.
+	var purge := CombatManager.new()
+	var sick := _combatant("Empoisonné", "Feu", 100, 50, 100, 900, true)
+	var buffed := _combatant("Renforcé", "Feu", 100, 50, 100, 900, false)
+	purge.start([sick] as Array[Combatant], [buffed] as Array[Combatant])
+	sick.add_status({"type": "burn", "duration": 3, "value": 0.1})
+	sick.add_status({"type": "atk_up", "duration": 3, "value": 0.2})
+	buffed.add_status({"type": "atk_up", "duration": 3, "value": 0.5})
+	purge._apply_skill_effects(sick, {"effects": [
+		{"type": "cleanse", "target": "self", "chance": 1.0}]}, [] as Array[Combatant], 0)
+	check(not sick.has_status("burn") and sick.has_status("atk_up"),
+		"le nettoyage retire les altérations néfastes et garde les bonnes")
+	purge._apply_skill_effects(sick, {"effects": [
+		{"type": "strip", "target": "target", "chance": 1.0}]}, [buffed] as Array[Combatant], 0)
+	check(not buffed.has_status("atk_up"), "le dissipement retire les altérations bénéfiques")
+
+	# Riposte : la cible rend le coup, sans boucle infinie.
+	var riposte := CombatManager.new()
+	riposte.rng.seed = 14
+	var striker := _combatant("Assaillant", "Feu", 150, 50, 100, 900, false)
+	var counterer := _combatant("Riposteur", "Feu", 150, 50, 100, 900, true)
+	riposte.start([counterer] as Array[Combatant], [striker] as Array[Combatant])
+	counterer.add_status({"type": "counter", "duration": 3, "value": 0.8})
+	riposte._basic_attack(striker, counterer)
+	check(striker.hp < striker.max_hp, "la riposte rend le coup à l'assaillant")
+
+	# Aperçu de l'ordre des tours : le rapide revient plus souvent que le lent.
+	var preview := CombatManager.new()
+	var quick := _combatant("Rapide", "Feu", 100, 50, 200, 900, true)
+	var laggard := _combatant("Lent", "Feu", 100, 50, 50, 900, false)
+	preview.start([quick] as Array[Combatant], [laggard] as Array[Combatant])
+	var upcoming := preview.turn_order_preview(6)
+	var quick_turns := upcoming.filter(func(u: Combatant) -> bool: return u == quick).size()
+	check(upcoming.size() == 6 and quick_turns >= 4,
+		"l'aperçu annonce 6 tours, dominés par le plus rapide (%d/6)" % quick_turns)
+	check(quick.atb == 0.0, "l'aperçu ne touche pas à l'état réel du combat")
+
 	# Les adversaires du contenu se montent bien au niveau demandé.
 	var boss := CombatManager.from_enemy("boss_solvire_kaan", 20)
 	var rookie := CombatManager.from_enemy("boss_solvire_kaan", 1)

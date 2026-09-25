@@ -740,7 +740,14 @@
       "defense_ignore": "ignore value de la DEF de la cible",
       "bonus_vs_burning": "dégâts × (1 + value) si la cible brûle déjà",
       "bonus_vs_wounded": "dégâts × (1 + value) si la cible est sous threshold de ses PV max",
-      "last_stand_bonus": "effets de la compétence renforcés de value si le lanceur est le dernier survivant"
+      "last_stand_bonus": "effets de la compétence renforcés de value si le lanceur est le dernier survivant",
+      "atb_boost": "pousse la jauge ATB de la cible de value (fraction du seuil) : elle agit plus tôt",
+      "atb_cut": "retient la jauge ATB de la cible de value : elle agit plus tard",
+      "def_down": "DEF réduite de value pendant duration",
+      "atk_down": "ATK réduite de value pendant duration",
+      "cleanse": "retire toutes les altérations néfastes de la cible",
+      "strip": "retire toutes les altérations bénéfiques de la cible",
+      "counter": "riposte automatiquement à chaque attaque subie pendant duration, pour value × ATK"
     }
   }
 }
