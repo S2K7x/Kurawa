@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Kurawa — Atelier d'illustrations</title>
+<style>
+  :root{
+    --ink:#08060a; --ink-deep:#050407; --surface:#16090d; --raised:#20101a;
+    --crimson:#a3172a; --crimson-bright:#d8263a; --gold:#e3d3a8; --gold-dim:#8c7a52;
+    --text:#ece4d6; --muted:#96887e;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ink);color:var(--text);
+       font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  header{padding:18px 24px;border-bottom:1px solid var(--gold-dim);
+         display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+  h1{margin:0;font-size:20px;letter-spacing:.18em;text-transform:uppercase;
+     font-family:Georgia,serif;color:var(--gold);font-weight:400}
+  .sub{color:var(--muted);font-size:12px}
+  main{display:grid;grid-template-columns:400px 1fr;gap:0;min-height:calc(100vh - 62px)}
+  .panel{padding:20px;border-right:1px solid #2a1a20;overflow-y:auto;max-height:calc(100vh - 62px)}
+  label{display:block;margin:14px 0 4px;font-size:11px;letter-spacing:.12em;
+        text-transform:uppercase;color:var(--gold-dim)}
+  input,select,textarea{width:100%;background:var(--ink-deep);color:var(--text);
+        border:1px solid #33222a;border-radius:2px;padding:8px 10px;font:inherit}
+  textarea{resize:vertical;min-height:70px}
+  button{background:var(--surface);color:var(--gold);border:1px solid var(--gold-dim);
+        border-radius:2px;padding:9px 14px;font:inherit;cursor:pointer;letter-spacing:.06em}
+  button:hover:not(:disabled){background:var(--raised);border-color:var(--gold)}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  button.primary{background:var(--crimson);border-color:var(--crimson-bright);color:#fff}
+  button.primary:hover:not(:disabled){background:var(--crimson-bright)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .row>*{flex:1}
+  .status{margin:14px 0;padding:10px 12px;border:1px solid #33222a;border-radius:2px;
+          background:var(--ink-deep);font-size:12px;color:var(--muted);min-height:38px}
+  .status b{color:var(--gold)}
+  .status.err{border-color:var(--crimson);color:#f0a8b0}
+  .queue{padding:20px;overflow-y:auto;max-height:calc(100vh - 62px)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
+  .card{border:1px solid #33222a;background:var(--surface);border-radius:3px;overflow:hidden;
+        display:flex;flex-direction:column}
+  .card .thumb{aspect-ratio:2/3;background:var(--ink-deep);display:flex;align-items:center;
+        justify-content:center;color:var(--muted);font-size:11px;text-align:center;padding:10px;
+        position:relative}
+  .card.square .thumb{aspect-ratio:1/1}
+  .card img{width:100%;height:100%;object-fit:cover;display:block}
+  .card .meta{padding:9px 10px;border-top:1px solid #33222a}
+  .card .name{color:var(--gold);font-size:12px;letter-spacing:.08em}
+  .card .prompt{color:var(--muted);font-size:10px;margin-top:4px;max-height:44px;overflow:hidden}
+  .card .acts{display:flex;gap:6px;padding:0 10px 10px}
+  .card .acts button{flex:1;padding:5px 6px;font-size:11px}
+  .spin{width:26px;height:26px;border:2px solid #33222a;border-top-color:var(--crimson-bright);
+        border-radius:50%;animation:s .8s linear infinite}
+  @keyframes s{to{transform:rotate(360deg)}}
+  .tag{display:inline-block;padding:1px 6px;border:1px solid var(--gold-dim);border-radius:2px;
+       font-size:10px;color:var(--gold-dim);margin-right:4px}
+  .hint{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.45}
+  .hint code{background:var(--ink-deep);padding:1px 4px;border-radius:2px;color:var(--gold-dim)}
+  .empty{color:var(--muted);text-align:center;padding:60px 20px;font-size:13px}
+  hr{border:0;border-top:1px solid #2a1a20;margin:20px 0}
+</style>
+</head>
+<body>
+<header>
+  <h1>Kurawa · Atelier</h1>
+  <span class="sub">Génération d'illustrations via l'API Perchance — à ouvrir dans un vrai navigateur</span>
+</header>
+
+<main>
+<section class="panel">
+  <div class="status" id="status">Prêt. Clique <b>Réveiller Cloudflare</b> avant la première génération.</div>
+  <button id="warm" style="width:100%">Réveiller Cloudflare</button>
+
+  <hr>
+
+  <label for="kind">Gabarit</label>
+  <select id="kind">
+    <option value="perso">Guerrier jouable (carte 2:3)</option>
+    <option value="boss">Boss nommé — Ordre Voracis (2:3)</option>
+    <option value="mob">Mob de donjon, sans nom (2:3)</option>
+    <option value="embleme">Emblème / sceau de guilde (1:1, détouré)</option>
+    <option value="decor">Décor de chapitre (paysage)</option>
+    <option value="libre">Prompt libre</option>
+  </select>
+
+  <label for="ident">Nom de fichier <span style="text-transform:none">(sans extension)</span></label>
+  <input id="ident" placeholder="kur_029">
+  <div class="hint">Pour un guerrier : l'<code>id</code> exact de <code>Data/characters_db.json</code>.</div>
+
+  <label for="element">Élément (aura)</label>
+  <select id="element">
+    <option value="">— aucun —</option>
+    <option value="Feu">Feu (orange incandescent)</option>
+    <option value="Eau">Eau (bleu profond)</option>
+    <option value="Foudre">Foudre (jaune électrique)</option>
+    <option value="Vent">Vent (vert turquoise)</option>
+  </select>
+
+  <label for="desc">Description du sujet</label>
+  <textarea id="desc" placeholder="jeune bretteuse au regard dur, cheveux courts argentés, manteau de cuir lacéré, katana brisé"></textarea>
+  <div class="hint">Décris le personnage, pas le style : le gabarit ajoute cadrage, fond et lumière.</div>
+
+  <label for="seed">Seed <span style="text-transform:none">(vide = aléatoire)</span></label>
+  <input id="seed" type="number" placeholder="ex. 12345">
+  <div class="hint">Même seed + même prompt ≈ même image. Note la seed d'une image réussie pour en faire des variantes.</div>
+
+  <label for="guidance">Fidélité au prompt — <span id="gval">7</span></label>
+  <input id="guidance" type="range" min="1" max="20" value="7">
+
+  <div class="row">
+    <button id="add">Ajouter à la file</button>
+    <button id="run" class="primary">Générer</button>
+  </div>
+  <div class="row">
+    <button id="variants">+4 variantes (seeds différentes)</button>
+  </div>
+  <div class="row">
+    <button id="clear">Vider la file</button>
+    <button id="dlall">Tout télécharger</button>
+  </div>
+
+  <hr>
+  <div class="hint">
+    <b style="color:var(--gold)">Après téléchargement</b><br>
+    Déposer les fichiers dans <code>Assets/Characters/</code> puis :<br>
+    <code>Godot --headless --path . --import</code><br>
+    Versionner les <code>.import</code> avec les images.
+  </div>
+</section>
+
+<section class="queue">
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty">La file est vide. Compose un prompt à gauche, puis « Ajouter à la file ».</div>
+</section>
+</main>
+
+<script>
+// ---------------------------------------------------------------- gabarits
+// Gabarit de référence : Assets/Characters/README.md (unité de la galerie).
+const BASE_PERSO = "illustration anime full color, style shonen moderne, cadrage buste-et-taille, "
+  + "visage dans le tiers superieur du cadre, fond sombre, eclairage de contre-jour, "
+  + "detail eleve, sans texte, sans cadre, sans bordure, sans logo";
+
+const AURAS = {
+  "Feu":    "aura de flammes orange incandescent (#e8552e)",
+  "Eau":    "aura d'eau bleu profond (#3a9ad9)",
+  "Foudre": "aura d'arcs electriques jaune vif (#f0d040)",
+  "Vent":   "aura de vent vert turquoise (#4ec9a0)"
+};
+
+const KINDS = {
+  perso:    {res:"512x768", ratio:"tall",   bg:false,
+             build:(d,a)=>`${BASE_PERSO}, ${d}${a?", "+a:""}`},
+  boss:     {res:"512x768", ratio:"tall",   bg:false,
+             build:(d,a)=>`${BASE_PERSO}, antagoniste imposant et arrogant, armure sombre `
+               + `a liseres cramoisis, posture dominante, ${d}${a?", "+a:""}`},
+  mob:      {res:"512x768", ratio:"tall",   bg:false,
+             build:(d,a)=>`illustration anime full color, style shonen moderne, creature `
+               + `anonyme issue d'une brèche dimensionnelle, silhouette sans visage humain, `
+               + `fond sombre, eclairage de contre-jour, sans texte, sans cadre, ${d}${a?", "+a:""}`},
+  embleme:  {res:"768x768", ratio:"square", bg:true,
+             build:(d,a)=>`embleme heraldique grave, sceau de guilde, symetrie parfaite, `
+               + `trait dore pale (#e3d3a8) sur fond noir, style gravure sur metal, `
+               + `aucun texte, aucune lettre, aucun mot, ${d}${a?", "+a:""}`},
+  decor:    {res:"768x512", ratio:"square", bg:false,
+             build:(d,a)=>`decor d'arriere-plan anime, style shonen moderne, paysage sombre `
+               + `et atmospherique, profondeur de champ, aucun personnage, sans texte, ${d}${a?", "+a:""}`},
+  libre:    {res:"512x768", ratio:"tall",   bg:false, build:(d,a)=>`${d}${a?", "+a:""}`}
+};
+
+const NEG = "NSFW, nudity, blurry, low quality, text, watermark, signature, lettering, "
+  + "words, letters, caption, frame, border, ui, logo, extra limbs, deformed hands";
+
+// ---------------------------------------------------------------- API Perchance
+let warmed = false;
+function warmUp(){
+  return new Promise(res=>{
+    if(warmed) return res(true);
+    const f = document.createElement("iframe");
+    f.style.cssText = "width:1px;height:1px;border:0;position:absolute;opacity:0";
+    f.src = "https://perchance.org";
+    const t = setTimeout(()=>{ f.remove(); res(false); }, 15000);
+    f.onload = ()=>{ clearTimeout(t); setTimeout(()=>{ f.remove(); warmed = true; res(true); }, 800); };
+    document.body.appendChild(f);
+  });
+}
+
+function generateImage(prompt, opts){
+  return new Promise((resolve, reject)=>{
+    const p = new URLSearchParams({
+      prompt, format:"json", negativePrompt:NEG,
+      id: Math.random().toString(36).slice(2)
+    });
+    Object.keys(opts||{}).forEach(k=>{ if(opts[k]!=="" && opts[k]!=null) p.set(k, opts[k]); });
+    const f = document.createElement("iframe");
+    f.style.cssText = "width:1px;height:1px;border:0;position:absolute;opacity:0";
+    f.src = "https://perchance.org/perchance-ai-api?" + p;
+    let settled = false;
+    function onMsg(e){
+      const d = e.data || {};
+      if(d.api !== "perchance-image-api" || !d.result || d.result.id !== p.get("id")) return;
+      finish(d.result);
+    }
+    function finish(result){
+      if(settled) return; settled = true;
+      window.removeEventListener("message", onMsg);
+      f.remove();
+      result.ok ? resolve(result) : reject(new Error(result.error || "échec de génération"));
+    }
+    window.addEventListener("message", onMsg);
+    document.body.appendChild(f);
+    setTimeout(()=>finish({ok:false, error:"délai dépassé (180 s)"}), 180000);
+  });
+}
+
+// ---------------------------------------------------------------- file d'attente
+const items = [];
+const $ = id => document.getElementById(id);
+
+function setStatus(html, isErr){
+  const s = $("status");
+  s.innerHTML = html;
+  s.className = "status" + (isErr ? " err" : "");
+}
+
+function currentPrompt(){
+  const kind = KINDS[$("kind").value];
+  const desc = $("desc").value.trim();
+  const aura = AURAS[$("element").value] || "";
+  return kind.build(desc, aura);
+}
+
+function addItem(seedOverride){
+  const kindKey = $("kind").value;
+  const kind = KINDS[kindKey];
+  const desc = $("desc").value.trim();
+  if(!desc){ setStatus("Décris d'abord le sujet.", true); return null; }
+  const seedRaw = seedOverride != null ? seedOverride : $("seed").value;
+  const it = {
+    id: "it" + items.length + "_" + Math.random().toString(36).slice(2,7),
+    name: ($("ident").value.trim() || kindKey + "_" + (items.length+1)),
+    kindKey, ratio: kind.ratio,
+    prompt: currentPrompt(),
+    opts: {
+      resolution: kind.res,
+      guidanceScale: $("guidance").value,
+      seed: seedRaw === "" ? "" : String(seedRaw),
+      removeBackground: kind.bg ? "true" : ""
+    },
+    state: "pending", url: null, seed: null
+  };
+  items.push(it);
+  render();
+  return it;
+}
+
+function render(){
+  const g = $("grid");
+  $("empty").style.display = items.length ? "none" : "block";
+  g.innerHTML = items.map(it=>{
+    let thumb;
+    if(it.state === "done")      thumb = `<img src="${it.url}" alt="">`;
+    else if(it.state === "run")  thumb = `<div class="spin"></div>`;
+    else if(it.state === "err")  thumb = `<span style="color:#f0a8b0">${it.error||"échec"}</span>`;
+    else                         thumb = `<span>en attente</span>`;
+    const seedTag = it.seed != null ? `<span class="tag">seed ${it.seed}</span>` : "";
+    return `<div class="card ${it.ratio==='square'?'square':''}">
+      <div class="thumb">${thumb}</div>
+      <div class="meta">
+        <div class="name">${it.name}</div>
+        <div style="margin-top:5px">
+          <span class="tag">${it.kindKey}</span>${seedTag}
+        </div>
+        <div class="prompt">${it.prompt}</div>
+      </div>
+      <div class="acts">
+        <button data-dl="${it.id}" ${it.state!=="done"?"disabled":""}>Télécharger</button>
+        <button data-re="${it.id}">Relancer</button>
+        <button data-rm="${it.id}">✕</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+async function runOne(it){
+  it.state = "run"; render();
+  try{
+    const r = await generateImage(it.prompt, it.opts);
+    it.url = r.url; it.seed = r.seed != null ? r.seed : null; it.state = "done";
+  }catch(e){
+    it.state = "err"; it.error = e.message;
+  }
+  render();
+}
+
+async function runQueue(){
+  const todo = items.filter(i=>i.state==="pending"||i.state==="err");
+  if(!todo.length){ setStatus("Rien à générer — la file est déjà traitée.", true); return; }
+  $("run").disabled = true;
+  if(!warmed){ setStatus("Réveil de Cloudflare…"); await warmUp(); }
+  for(let i=0;i<todo.length;i++){
+    setStatus(`Génération <b>${i+1} / ${todo.length}</b> — ${todo[i].name}… (jusqu'à 60 s par image)`);
+    await runOne(todo[i]);
+  }
+  const ok = items.filter(i=>i.state==="done").length;
+  const ko = items.filter(i=>i.state==="err").length;
+  setStatus(`Terminé : <b>${ok}</b> image(s) prête(s)${ko?`, <b>${ko}</b> en échec (bouton « Relancer »)`:""}.`, ko>0);
+  $("run").disabled = false;
+}
+
+async function download(it){
+  // Passe par un blob : le lien direct vers user.uploads.dev ouvrirait un onglet.
+  const ext = (it.url.match(/\.(png|jpe?g|webp)(\?|$)/i) || [,"png"])[1].toLowerCase();
+  try{
+    const blob = await (await fetch(it.url)).blob();
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${it.name}.${ext}`;
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+  }catch(e){
+    window.open(it.url, "_blank");   // repli : enregistrer à la main
+  }
+}
+
+// ---------------------------------------------------------------- événements
+$("guidance").oninput = e => $("gval").textContent = e.target.value;
+
+$("warm").onclick = async ()=>{
+  setStatus("Réveil de Cloudflare…");
+  const ok = await warmUp();
+  setStatus(ok ? "Cloudflare réveillé. Tu peux générer."
+               : "Réveil incertain — tente quand même une génération.", !ok);
+};
+
+$("add").onclick = ()=>{ if(addItem()) setStatus(`Ajouté à la file (${items.length}).`); };
+
+$("variants").onclick = ()=>{
+  for(let i=0;i<4;i++) addItem(Math.floor(Math.random()*1e6));
+  setStatus(`4 variantes ajoutées (${items.length} en file).`);
+};
+
+$("run").onclick = runQueue;
+
+$("clear").onclick = ()=>{ items.length = 0; render(); setStatus("File vidée."); };
+
+$("dlall").onclick = async ()=>{
+  const done = items.filter(i=>i.state==="done");
+  if(!done.length){ setStatus("Aucune image prête.", true); return; }
+  for(const it of done){ await download(it); await new Promise(r=>setTimeout(r,350)); }
+  setStatus(`<b>${done.length}</b> fichier(s) envoyé(s) dans tes téléchargements.`);
+};
+
+$("grid").onclick = e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  const find = id => items.find(i=>i.id===id);
+  if(b.dataset.dl) download(find(b.dataset.dl));
+  if(b.dataset.re){ const it=find(b.dataset.re); it.state="pending"; runOne(it); }
+  if(b.dataset.rm){ items.splice(items.findIndex(i=>i.id===b.dataset.rm),1); render(); }
+};
+
+render();
+</script>
+</body>
+</html>
