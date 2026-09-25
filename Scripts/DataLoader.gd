@@ -14,8 +14,10 @@ const META_PATH := "res://Data/meta.json"
 
 const FALLBACK_COLOR := Color(1, 1, 1)
 
-## Illustrations des guerriers : un fichier par identifiant (kur_001.png, kur_002.webp…).
+## Illustrations : un fichier par identifiant (kur_001.png, mob_ombre.webp…), rangé dans le
+## dossier de sa famille. Un identifiant sans fichier retombe sur son placeholder.
 const ART_DIR := "res://Assets/Characters"
+const ENEMY_ART_DIR := "res://Assets/Enemies"
 const ART_EXTENSIONS: Array[String] = ["png", "webp", "jpg"]
 
 # Le catalogue est relu par plusieurs systèmes et écrans : on le garde en cache.
@@ -59,14 +61,19 @@ static func enemies_db() -> Dictionary:
 
 ## Fiche d'un adversaire par identifiant, qu'il soit mob générique ou boss nommé.
 static func enemy(enemy_id: String) -> Dictionary:
+	var entry := enemy_or_empty(enemy_id)
+	if entry.is_empty():
+		push_error("DataLoader: adversaire inconnu : %s" % enemy_id)
+	return entry
+
+## Même recherche, mais muette : l'appelant sait qu'un identifiant peut n'être pas un
+## adversaire (l'arène interroge les deux catalogues pour trouver une illustration).
+static func enemy_or_empty(enemy_id: String) -> Dictionary:
 	if _enemy_index.is_empty():
 		for group: String in ["mobs", "bosses"]:
 			for entry: Dictionary in enemies_db().get(group, []):
 				_enemy_index[entry.get("id", "")] = entry
-	if not _enemy_index.has(enemy_id):
-		push_error("DataLoader: adversaire inconnu : %s" % enemy_id)
-		return {}
-	return _enemy_index[enemy_id]
+	return _enemy_index.get(enemy_id, {})
 
 ## Éléments jouables, dans l'ordre du cycle de forces (les clés de service commencent par "_").
 static func element_names() -> Array[String]:
@@ -91,10 +98,22 @@ static func character(character_id: String) -> Dictionary:
 ## déclaré dans son champ `art` si le fichier vit ailleurs. Retourne null tant qu'aucune
 ## illustration n'existe : l'appelant retombe alors sur son placeholder (Phase 4 en cours).
 static func character_art(character: Dictionary) -> Texture2D:
-	var character_id := str(character.get("id", ""))
-	var declared := str(character.get("art", ""))
-	var key := declared if declared != "" else character_id
-	if key == "":
+	return _art(character, ART_DIR)
+
+## Illustration d'un adversaire (mob de donjon ou boss nommé), même convention dans
+## `Assets/Enemies/`. Null tant que le fichier n'existe pas : l'arène garde son placeholder.
+static func enemy_art(enemy_entry: Dictionary) -> Texture2D:
+	return _art(enemy_entry, ENEMY_ART_DIR)
+
+## Résolution commune, avec cache des absences : sans lui, chaque vignette repayait un
+## ResourceLoader.exists() par extension candidate (~17 ms mesurés, voir CLAUDE.md > Profiler).
+static func _art(entry: Dictionary, directory: String) -> Texture2D:
+	var entry_id := str(entry.get("id", ""))
+	var declared := str(entry.get("art", ""))
+	# La clé inclut le dossier : un guerrier et un adversaire peuvent porter le même
+	# identifiant sans se voler leur illustration.
+	var key := declared if declared != "" else "%s/%s" % [directory, entry_id]
+	if declared == "" and entry_id == "":
 		return null
 	if _art_cache.has(key):
 		return _art_cache[key]
@@ -102,9 +121,9 @@ static func character_art(character: Dictionary) -> Texture2D:
 	var found: Texture2D = null
 	if declared != "" and ResourceLoader.exists(declared):
 		found = load(declared)
-	elif character_id != "":
+	elif entry_id != "":
 		for extension: String in ART_EXTENSIONS:
-			var path := "%s/%s.%s" % [ART_DIR, character_id, extension]
+			var path := "%s/%s.%s" % [directory, entry_id, extension]
 			if ResourceLoader.exists(path):
 				found = load(path)
 				break
