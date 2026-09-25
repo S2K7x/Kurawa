@@ -46,7 +46,7 @@ func _build() -> void:
 	# du portrait plutôt que déformée.
 	var artwork := DataLoader.character_art(DataLoader.character(unit.id))
 	if artwork != null:
-		_portrait.texture = artwork
+		_portrait.texture = _bust(artwork)
 		_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 		_initials.hide()
 	else:
@@ -96,6 +96,15 @@ func _bar_style(color: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = color
 	return style
+
+## La vignette de combat est large et courte : un recadrage centré couperait la tête.
+## On ne garde que le haut de l'illustration, là où se trouve le visage.
+func _bust(artwork: Texture2D) -> AtlasTexture:
+	var atlas := AtlasTexture.new()
+	atlas.atlas = artwork
+	var size := artwork.get_size()
+	atlas.region = Rect2(0, 0, size.x, size.y * 0.45)
+	return atlas
 
 func _portrait_texture(color: Color) -> GradientTexture2D:
 	var gradient := Gradient.new()

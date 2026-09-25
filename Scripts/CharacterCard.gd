@@ -100,7 +100,9 @@ func _card_style(rarity_color: Color) -> StyleBoxFlat:
 ## Pastille sombre derrière un badge, cerclée de la couleur qu'elle annonce.
 func _badge_style(color: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(Style.INK_DEEP, 0.82)
+	# Les badges se posent maintenant sur de vraies illustrations, parfois très claires :
+	# la pastille doit rester franchement opaque pour que la lettre reste lisible.
+	style.bg_color = Color(Style.INK_DEEP, 0.92)
 	style.set_border_width_all(1)
 	style.border_color = Color(color, 0.85)
 	style.set_corner_radius_all(2)

@@ -136,6 +136,10 @@ Références dans `Design-Style/`, implémentation dans `Scripts/Style.gd`.
 
 ## Sourcing des illustrations
 
+**Tranché (2026-09-25) :** génération IA (option 1). Les 20 guerriers sont illustrés, avec un
+gabarit de prompt commun documenté dans `Assets/Characters/README.md` pour garder l'unité de
+style à chaque ajout de personnage.
+
 Le développement (Phases 1-3) utilise des placeholders (carrés de couleur par élément/rareté). Les vraies illustrations arrivent en Phase 4. Options envisagées, non tranchées :
 
 1. **Génération IA** (Midjourney / Stable Diffusion) — rapide, itérable, cohérence de style à maintenir via prompts/seeds partagés

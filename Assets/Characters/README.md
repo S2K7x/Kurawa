@@ -1,5 +1,11 @@
 # Illustrations des guerriers
 
+Les 20 illustrations actuelles ont été générées par IA (Canva, compte de l'auteur) le
+2026-09-25, à partir d'un même gabarit de prompt : « illustration anime full color, style
+shonen moderne, cadrage buste-et-taille, visage dans le tiers supérieur, fond sombre,
+aura de la couleur de l'élément, éclairage de contre-jour, sans texte ni cadre ». Réutiliser
+ce gabarit pour tout nouveau guerrier, sinon la galerie perd son unité.
+
 Un fichier par guerrier, **nommé d'après son identifiant** dans `Data/characters_db.json` :
 
 ```
