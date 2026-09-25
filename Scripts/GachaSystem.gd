@@ -20,6 +20,12 @@ var pity_ssr_threshold: int = 0
 ## Désactivable uniquement pour mesurer les taux bruts en test.
 var pity_enabled: bool = true
 
+## Guerrier mis en avant par la bannière du moment ("" si aucune) et part qu'il occupe
+## dans son propre lot de rareté. Les taux par rareté, eux, ne bougent pas d'un iota :
+## la vedette redistribue à l'intérieur du lot SSR, elle ne le gonfle pas.
+var featured_id: String = ""
+var featured_share: float = 0.5
+
 # Compteurs de pity : tirages depuis le dernier SR+ / SSR obtenu. Sauvegardés via to_dict().
 var pulls_since_sr: int = 0
 var pulls_since_ssr: int = 0
@@ -103,7 +109,19 @@ func _pick_character(rarity: String) -> Dictionary:
 	var pool: Array = _pools.get(rarity, [])
 	if pool.is_empty():
 		return {}
+	if featured_id != "" and rng.randf() < featured_share:
+		for character: Dictionary in pool:
+			if character.get("id", "") == featured_id:
+				return character
 	return pool[rng.randi_range(0, pool.size() - 1)]
+
+## Raretés dont le lot contient un guerrier donné (sert à savoir où la vedette s'applique).
+func rarity_of(character_id: String) -> String:
+	for rarity_id: String in RARITY_ORDER:
+		for character: Dictionary in _pools.get(rarity_id, []):
+			if character.get("id", "") == character_id:
+				return rarity_id
+	return ""
 
 ## Un tirage simple. Retourne {"character": Dictionary, "rarity": String}.
 func single_pull() -> Dictionary:

@@ -33,29 +33,35 @@ func _process(_delta: float) -> bool:
 			for i in range(8):
 				_main._tutorial._advance()
 			_main.get_node("%SummonNav").button_pressed = true
-			_main._show(_main.get_node("%ScreenHost").get_child(0))
+			_main._show(_main.get_node("%ScreenHost").get_child(1))
 		40:
 			_shot("02_breche")
 		50:
 			var results: Array = _main.player.summon(true)
-			_main.get_node("%ScreenHost").get_child(0)._reveal.start(results)
+			_main.get_node("%ScreenHost").get_child(1)._reveal.start(results)
 		200:
 			_shot("03_revelation")
 		206:
-			_main.get_node("%ScreenHost").get_child(0)._reveal._show_summary()
+			_main.get_node("%ScreenHost").get_child(1)._reveal._show_summary()
 		260:
 			_shot("04_recap_x10")
-			_main.get_node("%ScreenHost").get_child(0)._reveal._close()
+			_main.get_node("%ScreenHost").get_child(1)._reveal._close()
 			_main.get_node("%GuildNav").button_pressed = true
 			_main._show(_main.get_node("%ScreenHost").get_child(1))
 		266:
 			_shot("05_guilde")
-			var inventory: Node = _main.get_node("%ScreenHost").get_child(1)
+			var inventory: Node = _main.get_node("%ScreenHost").get_child(2)
 			var grid: GridContainer = inventory.get_node("%Grid")
 			if grid.get_child_count() > 0:
 				inventory._show_detail(grid.get_child(0).character_id)
 		272:
 			_shot("06_fiche")
+			var gallery: Node = _main.get_node("%ScreenHost").get_child(2)
+			_main._on_artwork_requested(gallery._detail_id, gallery._filtered_ids())
+		276:
+			_shot("06b_artwork")
+			_main._art_viewer._close()
+			_main.get_node("%ScreenHost").get_child(2)._detail.hide()
 		278:
 			# Une révélation SSR forcée : c'est l'effet le plus spectaculaire, il doit être relu.
 			var ssr: Dictionary = {}
@@ -63,24 +69,31 @@ func _process(_delta: float) -> bool:
 				if character.get("rarity") == "SSR":
 					ssr = character
 					break
-			var inventory_screen: Node = _main.get_node("%ScreenHost").get_child(1)
+			var inventory_screen: Node = _main.get_node("%ScreenHost").get_child(2)
 			inventory_screen._detail.hide()
 			_main.get_node("%SummonNav").button_pressed = true
-			_main._show(_main.get_node("%ScreenHost").get_child(0))
-			_main.get_node("%ScreenHost").get_child(0)._reveal.start([
+			_main._show(_main.get_node("%ScreenHost").get_child(1))
+			_main.get_node("%ScreenHost").get_child(1)._reveal.start([
 				{"character": ssr, "rarity": "SSR", "is_new": true, "stars": 1, "or_bonus": 0}])
 		420:
 			_shot("07_ssr")
 		430:
 			_main._arena._on_continue() if _main._arena.visible else null
-			_main._show(_main.get_node("%ScreenHost").get_child(0))
-			_main.get_node("%ScreenHost").get_child(0)._reveal._close()
+			_main._show(_main.get_node("%ScreenHost").get_child(1))
+			_main.get_node("%ScreenHost").get_child(1)._reveal._close()
 			_main.get_node("%StoryNav").button_pressed = true
-			_main._show(_main.get_node("%ScreenHost").get_child(2))
+			_main._show(_main.get_node("%ScreenHost").get_child(3))
+		436:
+			_main.get_node("%HqNav").button_pressed = true
+			_main._show(_main.get_node("%ScreenHost").get_child(0))
+		438:
+			_shot("07b_qg")
+			_main.get_node("%StoryNav").button_pressed = true
+			_main._show(_main.get_node("%ScreenHost").get_child(3))
 		440:
 			_shot("08_histoire")
 			_main.get_node("%DungeonNav").button_pressed = true
-			_main._show(_main.get_node("%ScreenHost").get_child(3))
+			_main._show(_main.get_node("%ScreenHost").get_child(4))
 		450:
 			_shot("09_donjons")
 			var chapter: Dictionary = ContentLibrary.chapter("ch_01")

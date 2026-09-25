@@ -12,6 +12,9 @@ const SORTS := ["Rareté", "Niveau", "Étoiles"]
 ## 3 colonnes sur 720 px de large : hauteur choisie pour rester proche du ratio 2:3 des posters.
 const CARD_HEIGHT := 312
 
+## Demande d'ouverture de la visionneuse plein écran : c'est Main qui la possède.
+signal artwork_requested(character_id: String, ids: Array)
+
 @onready var _grid: GridContainer = %Grid
 @onready var _header: Label = %Header
 @onready var _empty_label: Label = %EmptyLabel
@@ -23,11 +26,14 @@ const CARD_HEIGHT := 312
 @onready var _detail_sub: Label = %DetailSub
 @onready var _detail_stars: Label = %DetailStars
 @onready var _detail_body: RichTextLabel = %DetailBody
+@onready var _detail_art_button: Button = %DetailArtButton
 
 var _player: PlayerManager
 var _rarity_filter: String = ALL
 var _element_filter: String = ALL
 var _sort: String = SORTS[0]
+## Guerrier ouvert dans la fiche, pour le passer à la visionneuse plein écran.
+var _detail_id: String = ""
 
 ## Appelé par Main juste après l'instanciation (l'écran ne crée jamais son PlayerManager).
 func setup(player: PlayerManager) -> void:
@@ -42,6 +48,9 @@ func _ready() -> void:
 	_build_filters(%SortFilters, SORTS, _on_sort, SORTS[0])
 	var close_button: Button = %DetailClose
 	close_button.pressed.connect(_detail.hide)
+	_detail_art_button.pressed.connect(func() -> void: artwork_requested.emit(_detail_id, _filtered_ids()))
+	_detail_art_button.add_theme_stylebox_override("normal", Style.action_button(Color(Style.CRIMSON, 0.5), Style.GOLD_DIM, 12))
+	_detail_art_button.add_theme_stylebox_override("hover", Style.action_button(Style.CRIMSON, Style.GOLD, 12))
 	# Même principe que la révélation : la fiche passe au-dessus de toute l'application.
 	remove_child(_detail)
 	var overlay := CanvasLayer.new()
@@ -143,6 +152,7 @@ func _refresh() -> void:
 		card.pressed.connect(_show_detail)
 
 func _show_detail(character_id: String) -> void:
+	_detail_id = character_id
 	var data := _player.get_character_data(character_id)
 	var entry: Dictionary = _player.inventory.get(character_id, {})
 	var progression := _player.progression
@@ -196,6 +206,7 @@ func _show_detail(character_id: String) -> void:
 			stars + 1, roundi(progression.get_star_bonus_pct(stars + 1))])
 
 	_detail_body.text = "\n".join(lines)
+	_detail_art_button.visible = DataLoader.character_art(data) != null
 	_detail.show()
 
 ## Intertitre doré en capitales, comme les cartouches des écrans de référence.

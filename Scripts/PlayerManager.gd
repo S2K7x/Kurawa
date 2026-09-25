@@ -7,7 +7,7 @@ class_name PlayerManager
 
 signal state_changed
 
-const SAVE_VERSION := 2
+const SAVE_VERSION := 3
 const DEFAULT_SAVE_PATH := "user://kurawa_save.json"
 
 var save_path: String = DEFAULT_SAVE_PATH
@@ -30,6 +30,7 @@ var tutorial_seen: bool = false
 var gacha := GachaSystem.new()
 var stamina := StaminaSystem.new()
 var progression := ProgressionSystem.new()
+var meta := MetaProgression.new()
 
 # character_id -> fiche du catalogue
 var _catalog: Dictionary = {}
@@ -40,6 +41,28 @@ func _init() -> void:
 
 func _ready() -> void:
 	load_or_new_game()
+
+## Répercute sur les systèmes ce que la méta-progression décide : plafond d'énergie relevé
+## par le niveau de guilde, et guerrier mis en avant par la bannière du moment.
+func _sync_meta_bonuses() -> void:
+	var base_max := int(DataLoader.load_json(DataLoader.ECONOMY_PATH).get("stamina", {}).get("max", 120))
+	stamina.max_stamina = base_max + meta.bonus_stamina()
+	var ssr_ids: Array = []
+	for character: Dictionary in DataLoader.characters_db().get("characters", []):
+		if character.get("rarity", "") == "SSR" and not character.get("starter", false):
+			ssr_ids.append(character["id"])
+	ssr_ids.sort()
+	gacha.featured_id = meta.featured_character_id(ssr_ids)
+	gacha.featured_share = meta.featured_share()
+
+## Bascule quotidienne : missions renouvelées, invocation offerte rendue, vedette recalculée.
+func refresh_day() -> bool:
+	if not meta.refresh_day():
+		return false
+	_sync_meta_bonuses()
+	save_game()
+	state_changed.emit()
+	return true
 
 func get_character_data(character_id: String) -> Dictionary:
 	return _catalog.get(character_id, {})
@@ -74,6 +97,9 @@ func new_game() -> void:
 	claimed_first_clear = {}
 	last_team = []
 	tutorial_seen = false
+	meta = MetaProgression.new()
+	meta.refresh_day()
+	_sync_meta_bonuses()
 	gacha.from_dict({})
 	stamina.reset_full()
 	# Personnage de départ garanti, lié à l'histoire (voir GDD.md > Personnage de départ).
@@ -100,6 +126,7 @@ func save_game() -> bool:
 		"last_team": last_team,
 		"tutorial_seen": tutorial_seen,
 		"gacha": gacha.to_dict(),
+		"meta": meta.to_dict(),
 		"stamina": stamina.to_dict(),
 	}
 	# Écriture atomique : fichier temporaire puis renommage, pour ne jamais laisser
@@ -150,6 +177,8 @@ func load_game() -> bool:
 		if inventory.has(character_id):
 			last_team.append(character_id)
 	tutorial_seen = bool(data.get("tutorial_seen", false))
+	meta.from_dict(data.get("meta", {}))
+	_sync_meta_bonuses()
 	gacha.from_dict(data.get("gacha", {}))
 	stamina.from_dict(data.get("stamina", {}))
 	state_changed.emit()
@@ -182,8 +211,13 @@ func can_afford_summon(multi: bool) -> bool:
 
 ## Paie et effectue une invocation, ajoute les guerriers à l'inventaire puis sauvegarde.
 ## Retourne les résultats enrichis (voir add_character), ou [] si les Éclats manquent.
-func summon(multi: bool) -> Array:
-	if not spend_eclats(gacha.get_cost(multi)):
+## `free` : l'invocation offerte du jour, qui ne coûte rien et ne peut être prise qu'une fois.
+func summon(multi: bool, free: bool = false) -> Array:
+	if free:
+		if multi or not meta.has_free_summon():
+			return []
+		meta.consume_free_summon()
+	elif not spend_eclats(gacha.get_cost(multi)):
 		return []
 	var pulls: Array = gacha.multi_pull() if multi else [gacha.single_pull()]
 	var results: Array = []
@@ -192,6 +226,9 @@ func summon(multi: bool) -> Array:
 		result["character"] = pull["character"]
 		result["rarity"] = pull["rarity"]
 		results.append(result)
+		meta.bump("summons")
+		if not result["is_new"] and int(result.get("or_bonus", 0)) == 0:
+			meta.bump("stars_gained")
 	save_game()
 	state_changed.emit()
 	return results
@@ -242,7 +279,8 @@ func is_battle_unlocked(chapter_id: String, battle_index: int) -> bool:
 ## Enregistre une victoire : XP à l'équipe engagée, Or, avancement du chapitre et
 ## récompense de premier passage s'il vient d'être bouclé. Retourne le détail pour l'écran
 ## de fin de combat. Ne consomme pas d'énergie : c'est start_combat() qui l'a déjà fait.
-func grant_victory(team_ids: Array, rewards: Dictionary, chapter_id: String = "", battle_index: int = -1) -> Dictionary:
+func grant_victory(team_ids: Array, rewards: Dictionary, chapter_id: String = "", battle_index: int = -1,
+		battle_stats: Dictionary = {}) -> Dictionary:
 	var gained_or := int(rewards.get("or", 0))
 	var gained_xp := int(rewards.get("xp", 0))
 	add_or(gained_or)
@@ -251,6 +289,15 @@ func grant_victory(team_ids: Array, rewards: Dictionary, chapter_id: String = ""
 		var levels := add_character_xp(character_id, gained_xp)
 		if levels > 0:
 			level_ups[character_id] = levels
+			meta.bump("level_ups", levels)
+	meta.bump("victories")
+	meta.bump("ultimates", int(battle_stats.get("ultimates", 0)))
+	meta.bump("dungeon_clears" if chapter_id == "" else "story_clears")
+	var guild_levels := meta.add_guild_xp(true)
+	for i in range(guild_levels):
+		_apply_reward(meta.level_reward())
+	if guild_levels > 0:
+		_sync_meta_bonuses()
 
 	var first_clear := {}
 	if chapter_id != "" and battle_index >= 0:
@@ -264,10 +311,13 @@ func grant_victory(team_ids: Array, rewards: Dictionary, chapter_id: String = ""
 	last_team = team_ids.duplicate()
 	save_game()
 	state_changed.emit()
-	return {"or": gained_or, "xp": gained_xp, "level_ups": level_ups, "first_clear": first_clear}
+	return {"or": gained_or, "xp": gained_xp, "level_ups": level_ups, "first_clear": first_clear,
+		"guild_levels": guild_levels}
 
 ## Défaite : rien n'est gagné, mais l'équipe engagée est mémorisée pour la prochaine tentative.
-func record_defeat(team_ids: Array) -> void:
+func record_defeat(team_ids: Array, battle_stats: Dictionary = {}) -> void:
+	meta.bump("ultimates", int(battle_stats.get("ultimates", 0)))
+	meta.add_guild_xp(false)
 	last_team = team_ids.duplicate()
 	save_game()
 	state_changed.emit()
@@ -276,6 +326,38 @@ func record_defeat(team_ids: Array) -> void:
 func mark_tutorial_seen() -> void:
 	tutorial_seen = true
 	save_game()
+
+# --- Récompenses de la méta-progression -----------------------------------------------------------
+
+## Verse une récompense {eclats_dimensionnels, or_de_guilde}. Retourne false si elle est vide.
+func _apply_reward(reward: Dictionary) -> bool:
+	if reward.is_empty():
+		return false
+	add_eclats(int(reward.get("eclats_dimensionnels", 0)))
+	add_or(int(reward.get("or_de_guilde", 0)))
+	return true
+
+func claim_login() -> Dictionary:
+	return _claim(meta.claim_login())
+
+func claim_mission(mission_id: String) -> Dictionary:
+	return _claim(meta.claim_mission(mission_id))
+
+func claim_daily_chest() -> Dictionary:
+	return _claim(meta.claim_daily_chest())
+
+func claim_achievement(achievement_id: String) -> Dictionary:
+	return _claim(meta.claim_achievement(achievement_id))
+
+func claim_collection(milestone: int) -> Dictionary:
+	return _claim(meta.claim_collection(inventory.size(), milestone))
+
+func _claim(reward: Dictionary) -> Dictionary:
+	if not _apply_reward(reward):
+		return {}
+	save_game()
+	state_changed.emit()
+	return reward
 
 # --- Énergie ---------------------------------------------------------------------------------
 

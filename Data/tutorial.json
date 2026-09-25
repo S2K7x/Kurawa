@@ -19,12 +19,17 @@
     {
       "nav": "StoryNav",
       "title": "Le mode histoire",
-      "body": "Quatre chapitres contre L'Ordre Voracis, la guilde rivale. Chaque chapitre est nettement plus dur que le précédent : tu ne le passeras pas sans monter ton équipe entre deux."
+      "body": "Cinq chapitres contre L'Ordre Voracis, la guilde rivale. Chaque chapitre est nettement plus dur que le précédent : tu ne le passeras pas sans monter ton équipe entre deux."
     },
     {
       "nav": "DungeonNav",
       "title": "Les donjons",
       "body": "Rejouables à volonté, c'est là que se fait la montée en puissance : Or, XP, et un donjon par élément.\n\nSouviens-toi du cycle : Feu bat Vent, Vent bat Foudre, Foudre bat Eau, Eau bat Feu. Un avantage élémentaire, c'est 50% de dégâts en plus."
+    },
+    {
+      "nav": "HqNav",
+      "title": "Le quartier général",
+      "body": "Ta connexion du jour, ton invocation offerte, tes missions et tes exploits t'y attendent.\n\nTout s'y gagne en jouant ou en revenant : rien ne s'y achète."
     },
     {
       "nav": "",

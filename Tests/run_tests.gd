@@ -9,6 +9,7 @@ const TEST_SAVE_PATH := "user://test_kurawa_save.json"
 var _failures: int = 0
 var _checks: int = 0
 var fake_time: float = 1_000_000.0
+var fake_day: String = "2026-09-25"
 
 # Les tests d'UI ont besoin que l'arbre tourne : on les lance après les tests de logique,
 # puis on vérifie l'état des écrans une fois quelques frames passées.
@@ -281,9 +282,9 @@ func start_ui_tests() -> void:
 
 func finish_ui_tests() -> void:
 	var host: Node = _main.get_node("%ScreenHost")
-	check(host.get_child_count() == 4, "Brèche, Guilde, Histoire et Donjons montés dans la coquille")
-	var summon: Node = host.get_child(0)
-	var inventory: Node = host.get_child(1)
+	check(host.get_child_count() == 5, "QG, Brèche, Guilde, Histoire et Donjons montés dans la coquille")
+	var summon: Node = host.get_child(1)
+	var inventory: Node = host.get_child(2)
 	check(summon.visible and not inventory.visible, "la Brèche est l'écran d'accueil")
 
 	var grid: GridContainer = inventory.get_node("%Grid")
@@ -325,6 +326,8 @@ func finish_ui_tests() -> void:
 	summon._reveal._close()
 	check(not summon._reveal.visible, "la révélation se referme")
 
+	test_meta_progression(host)
+	test_art_viewer(host)
 	test_onboarding()
 	test_combat_screens(host)
 	_ui_completed = true
@@ -553,8 +556,8 @@ func test_combat() -> void:
 func test_combat_screens(host: Node) -> void:
 	print("Combat depuis l'interface")
 	var player: PlayerManager = _main.player
-	var story: Node = host.get_child(2)
-	var dungeons: Node = host.get_child(3)
+	var story: Node = host.get_child(3)
+	var dungeons: Node = host.get_child(4)
 	check(story.has_signal("encounter_requested") and dungeons.has_signal("encounter_requested"),
 		"Histoire et Donjons demandent leurs combats à la coquille")
 	check(player.is_chapter_unlocked("ch_01") and not player.is_chapter_unlocked("ch_02"),
@@ -630,3 +633,125 @@ func test_onboarding() -> void:
 	reloaded.load_or_new_game()
 	check(reloaded.tutorial_seen, "le tutoriel reste vu après rechargement")
 	reloaded.free()
+
+## Visionneuse plein écran : elle doit s'ouvrir sur le bon guerrier, se parcourir, et
+## refuser de s'ouvrir sur un guerrier sans illustration.
+func test_art_viewer(host: Node) -> void:
+	print("Visionneuse d'illustrations")
+	var inventory: Node = host.get_child(2)
+	var viewer: Node = _main._art_viewer
+	var ids: Array = inventory._filtered_ids()
+	check(ids.size() >= 2, "assez de guerriers possédés pour parcourir la galerie (%d)" % ids.size())
+
+	_main._on_artwork_requested(ids[0], ids)
+	check(viewer.visible and viewer._index == 0, "la visionneuse s'ouvre sur le guerrier demandé")
+	check(viewer.get_node("%Art").texture != null, "l'illustration est chargée en plein écran")
+	viewer._step(1)
+	check(viewer._index == 1, "le glissement passe au guerrier suivant")
+	viewer._step(-1)
+	check(viewer._index == 0, "le glissement revient en arrière")
+	viewer._set_caption_visible(false)
+	check(not viewer.get_node("%Caption").visible, "le bandeau se masque pour laisser l'illustration seule")
+	viewer._close()
+	check(not viewer.visible, "la visionneuse se referme")
+
+## Boucles d'engagement : connexion, invocation offerte, missions, exploits, collection,
+## niveau de guilde et bannière vedette. Le tout doit survivre à un rechargement et à un
+## changement de jour.
+func test_meta_progression(host: Node) -> void:
+	print("Quartier général")
+	var player: PlayerManager = _main.player
+	var meta := player.meta
+	fake_day = "2026-09-25"
+	meta.clock = func() -> String: return fake_day
+	meta.refresh_day()
+
+	# Connexion du jour : réclamable une fois, valeur croissante, série qui avance.
+	check(meta.can_claim_login(), "la connexion du jour est réclamable")
+	var eclats_before: int = player.eclats_dimensionnels
+	var login := player.claim_login()
+	check(not login.is_empty() and player.eclats_dimensionnels > eclats_before,
+		"la connexion verse ses Éclats (+%d)" % int(login.get("eclats_dimensionnels", 0)))
+	check(not meta.can_claim_login() and meta.login_streak == 1, "elle ne se réclame pas deux fois")
+	check(player.claim_login().is_empty(), "une seconde tentative ne donne rien")
+
+	# Jour 7 plus généreux que le jour 1 : la série doit valoir la peine d'être tenue.
+	var cycle: Array = meta.config["daily_login"]["cycle"]
+	check(int(cycle[6]["eclats_dimensionnels"]) > int(cycle[0]["eclats_dimensionnels"]) * 3,
+		"le jour 7 vaut nettement plus que le jour 1")
+
+	# Invocation offerte : une par jour, gratuite.
+	check(meta.has_free_summon(), "l'invocation offerte est disponible")
+	var before_free: int = player.eclats_dimensionnels
+	var free_pull: Array = player.summon(false, true)
+	check(free_pull.size() == 1 and player.eclats_dimensionnels == before_free,
+		"l'invocation offerte ne coûte aucun Éclat")
+	check(player.summon(false, true).is_empty(), "elle ne se prend qu'une fois par jour")
+
+	# Missions du jour : progression, réclamation, puis coffre.
+	check(meta.mission_states().size() == 3, "trois missions tirées pour la journée")
+	for state: Dictionary in meta.mission_states():
+		meta.bump(_mission_counter(meta, str(state["id"])), int(state["target"]))
+	var all_done := true
+	for state: Dictionary in meta.mission_states():
+		all_done = all_done and state["done"]
+	check(all_done, "les missions se marquent accomplies quand le compteur suit")
+	for state: Dictionary in meta.mission_states():
+		player.claim_mission(str(state["id"]))
+	check(meta.can_claim_daily_chest(), "le coffre du jour s'ouvre une fois les trois missions prises")
+	check(not player.claim_daily_chest().is_empty() and not meta.can_claim_daily_chest(),
+		"le coffre ne se prend qu'une fois")
+
+	# Exploits : paliers successifs.
+	meta.counters["summons"] = 10
+	var claimable := meta.achievement_states().filter(func(a: Dictionary) -> bool: return a["claimable"])
+	check(claimable.size() > 0, "un palier d'exploit devient réclamable")
+	var achievement_id: String = claimable[0]["id"]
+	check(not player.claim_achievement(achievement_id).is_empty(), "le palier se réclame")
+	check(player.claim_achievement(achievement_id).is_empty(), "et pas deux fois")
+
+	# Collection : jalon atteint selon le nombre de guerriers différents.
+	var owned: int = player.inventory.size()
+	var milestones := meta.collection_states(owned).filter(func(c: Dictionary) -> bool: return c["claimable"])
+	if milestones.size() > 0:
+		var milestone: int = milestones[0]["owned"]
+		check(not player.claim_collection(milestone).is_empty(), "un jalon de collection se réclame")
+		check(player.claim_collection(milestone).is_empty(), "et pas deux fois")
+
+	# Niveau de guilde : monte à chaque combat, relève le plafond d'énergie.
+	var level_before: int = meta.guild_level
+	var base_max: int = player.stamina.max_stamina
+	for i in range(40):
+		meta.add_guild_xp(true)
+	check(meta.guild_level > level_before, "la guilde monte de niveau en combattant (%d -> %d)" % [
+		level_before, meta.guild_level])
+	player._sync_meta_bonuses()
+	check(player.stamina.max_stamina > base_max, "le niveau de guilde relève le plafond d'énergie")
+
+	# Bannière vedette : un SSR mis en avant, stable sur la journée.
+	check(player.gacha.featured_id != "", "une vedette est désignée")
+	check(player.get_character_data(player.gacha.featured_id).get("rarity", "") == "SSR",
+		"la vedette est un SSR")
+
+	# Nouveau jour : missions renouvelées, invocation offerte rendue, série conservée.
+	fake_day = "2026-09-26"
+	check(player.refresh_day(), "le changement de jour est détecté")
+	check(meta.can_claim_login() and meta.has_free_summon(), "connexion et invocation offerte reviennent")
+	check(meta.login_streak == 1, "la série de connexion n'est pas perdue en changeant de jour")
+
+	# Tout cela survit à un rechargement.
+	player.save_game()
+	var reloaded := PlayerManager.new()
+	reloaded.save_path = TEST_SAVE_PATH
+	reloaded.meta.clock = func() -> String: return fake_day
+	reloaded.load_or_new_game()
+	check(reloaded.meta.guild_level == meta.guild_level and reloaded.meta.login_streak == meta.login_streak,
+		"niveau de guilde et série rechargés")
+	check(reloaded.meta.count("summons") == meta.count("summons"), "les compteurs de vie sont rechargés")
+	reloaded.free()
+
+func _mission_counter(meta: MetaProgression, mission_id: String) -> String:
+	for mission: Dictionary in meta.config["daily_missions"]["pool"]:
+		if mission["id"] == mission_id:
+			return str(mission["counter"])
+	return ""

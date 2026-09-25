@@ -1,0 +1,109 @@
+{
+  "_comment": "Boucles d'engagement (Phase 5), inspirées des standards du genre : connexion quotidienne à valeur croissante avec pardon de série, invocation gratuite du jour, missions quotidiennes, bannière vedette à taux doublé, exploits par paliers, jalons de collection et niveau de guilde. Toutes ces récompenses sont gratuites : le jeu n'a pas de monétisation, donc aucune de ces boucles ne pousse à dépenser — elles donnent seulement des raisons de revenir et des objectifs à court, moyen et long terme.",
+
+  "daily_login": {
+    "_comment": "Cycle de 7 jours à valeur croissante (le jour 7 doit valoir nettement le jour 1). `forgiveness` : rater un jour ne remet pas la série à zéro, elle se met seulement en pause — punir l'oubli fait perdre des joueurs sans rien apporter.",
+    "forgiveness": true,
+    "cycle": [
+      { "day": 1, "eclats_dimensionnels": 30, "or_de_guilde": 200 },
+      { "day": 2, "eclats_dimensionnels": 40, "or_de_guilde": 300 },
+      { "day": 3, "eclats_dimensionnels": 50, "or_de_guilde": 400 },
+      { "day": 4, "eclats_dimensionnels": 60, "or_de_guilde": 600 },
+      { "day": 5, "eclats_dimensionnels": 80, "or_de_guilde": 800 },
+      { "day": 6, "eclats_dimensionnels": 100, "or_de_guilde": 1000 },
+      { "day": 7, "eclats_dimensionnels": 200, "or_de_guilde": 2000 }
+    ]
+  },
+
+  "free_summon": {
+    "_comment": "Une invocation offerte par jour : c'est le rendez-vous quotidien le plus efficace d'un gacha, et ici il ne coûte rien à personne.",
+    "per_day": 1
+  },
+
+  "daily_missions": {
+    "_comment": "Trois missions tirées du lot chaque jour, plus un coffre quand les trois sont réclamées. Objectifs courts, tenables en une session.",
+    "count": 3,
+    "chest": { "eclats_dimensionnels": 60, "or_de_guilde": 500 },
+    "pool": [
+      { "id": "dm_summon", "label": "Invoquer un guerrier", "counter": "summons", "target": 1, "eclats_dimensionnels": 20, "or_de_guilde": 150 },
+      { "id": "dm_summon_5", "label": "Invoquer 5 guerriers", "counter": "summons", "target": 5, "eclats_dimensionnels": 40, "or_de_guilde": 300 },
+      { "id": "dm_win_3", "label": "Gagner 3 combats", "counter": "victories", "target": 3, "eclats_dimensionnels": 30, "or_de_guilde": 400 },
+      { "id": "dm_win_5", "label": "Gagner 5 combats", "counter": "victories", "target": 5, "eclats_dimensionnels": 45, "or_de_guilde": 600 },
+      { "id": "dm_dungeon_2", "label": "Boucler 2 donjons", "counter": "dungeon_clears", "target": 2, "eclats_dimensionnels": 30, "or_de_guilde": 500 },
+      { "id": "dm_story", "label": "Avancer dans l'histoire", "counter": "story_clears", "target": 1, "eclats_dimensionnels": 35, "or_de_guilde": 400 },
+      { "id": "dm_level", "label": "Faire monter un guerrier de niveau", "counter": "level_ups", "target": 1, "eclats_dimensionnels": 25, "or_de_guilde": 250 },
+      { "id": "dm_ultimate", "label": "Lâcher une Percée de la Brèche", "counter": "ultimates", "target": 1, "eclats_dimensionnels": 30, "or_de_guilde": 300 }
+    ]
+  },
+
+  "featured_banner": {
+    "_comment": "Un SSR mis en avant, renouvelé toutes les semaines : dans le lot des SSR, la vedette sort une fois sur deux. Les taux restent affichés en clair dans l'écran d'invocation — un gacha qui cache ses taux ne mérite pas la confiance qu'il demande.",
+    "rotation_days": 7,
+    "featured_share": 0.5
+  },
+
+  "guild_levels": {
+    "_comment": "Niveau de guilde : une progression lente qui avance à chaque combat, quelle qu'en soit l'issue, et donne un objectif de fond quand les chapitres sont bouclés. Chaque niveau augmente aussi le plafond d'énergie.",
+    "xp_per_victory": 40,
+    "xp_per_defeat": 12,
+    "xp_base": 200,
+    "xp_growth": 1.18,
+    "max_level": 30,
+    "stamina_per_level": 3,
+    "level_reward": { "eclats_dimensionnels": 25, "or_de_guilde": 300 }
+  },
+
+  "collection": {
+    "_comment": "Jalons de collection : récompenser le fait de posséder des guerriers différents, pas seulement des doublons. C'est ce qui donne une valeur au R qu'on n'a pas encore.",
+    "milestones": [
+      { "owned": 5, "eclats_dimensionnels": 50, "or_de_guilde": 500 },
+      { "owned": 10, "eclats_dimensionnels": 100, "or_de_guilde": 1000 },
+      { "owned": 15, "eclats_dimensionnels": 150, "or_de_guilde": 1500 },
+      { "owned": 20, "eclats_dimensionnels": 250, "or_de_guilde": 2500 },
+      { "owned": 28, "eclats_dimensionnels": 500, "or_de_guilde": 5000 }
+    ]
+  },
+
+  "achievements": [
+    {
+      "id": "ach_summons", "label": "Maître de la Brèche", "counter": "summons",
+      "tiers": [
+        { "target": 10, "eclats_dimensionnels": 30, "or_de_guilde": 300 },
+        { "target": 50, "eclats_dimensionnels": 80, "or_de_guilde": 800 },
+        { "target": 200, "eclats_dimensionnels": 200, "or_de_guilde": 2000 }
+      ]
+    },
+    {
+      "id": "ach_victories", "label": "Chef de guerre", "counter": "victories",
+      "tiers": [
+        { "target": 10, "eclats_dimensionnels": 30, "or_de_guilde": 400 },
+        { "target": 50, "eclats_dimensionnels": 80, "or_de_guilde": 1000 },
+        { "target": 150, "eclats_dimensionnels": 200, "or_de_guilde": 3000 }
+      ]
+    },
+    {
+      "id": "ach_stars", "label": "Forgeur d'étoiles", "counter": "stars_gained",
+      "tiers": [
+        { "target": 5, "eclats_dimensionnels": 40, "or_de_guilde": 400 },
+        { "target": 20, "eclats_dimensionnels": 120, "or_de_guilde": 1200 },
+        { "target": 50, "eclats_dimensionnels": 300, "or_de_guilde": 3000 }
+      ]
+    },
+    {
+      "id": "ach_ultimates", "label": "Déchireur de Brèche", "counter": "ultimates",
+      "tiers": [
+        { "target": 5, "eclats_dimensionnels": 30, "or_de_guilde": 300 },
+        { "target": 25, "eclats_dimensionnels": 90, "or_de_guilde": 900 },
+        { "target": 100, "eclats_dimensionnels": 250, "or_de_guilde": 2500 }
+      ]
+    },
+    {
+      "id": "ach_story", "label": "Rival de l'Ordre", "counter": "story_clears",
+      "tiers": [
+        { "target": 2, "eclats_dimensionnels": 50, "or_de_guilde": 500 },
+        { "target": 6, "eclats_dimensionnels": 150, "or_de_guilde": 1500 },
+        { "target": 10, "eclats_dimensionnels": 400, "or_de_guilde": 4000 }
+      ]
+    }
+  ]
+}

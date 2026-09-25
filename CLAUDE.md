@@ -40,7 +40,8 @@ Kurawa/
 │   ├── enemies.json        # mobs génériques (donjons) et boss nommés (fins de chapitre)
 │   ├── story.json          # 4 chapitres : textes, combats, récompenses de premier passage
 │   ├── dungeons.json       # donjons rejouables (Or, XP, élémentaires)
-│   └── tutorial.json       # texte du tutoriel de première partie
+│   ├── tutorial.json       # texte du tutoriel de première partie
+│   └── meta.json           # boucles d'engagement : connexion, missions, exploits, guilde
 ├── Scripts/
 │   ├── DataLoader.gd       # lecture des Data/*.json + couleurs éléments/raretés
 │   ├── GachaSystem.gd      # tirage RNG + pity system
@@ -60,13 +61,16 @@ Kurawa/
 │   ├── Combatant.gd        # état d'un combattant en piste (PV, ATB, altérations)
 │   ├── CombatManager.gd    # combat au tour par tour (ATB Vitesse) + IA tactique
 │   ├── ContentLibrary.gd   # accès aux chapitres/donjons + barème de récompenses
+│   ├── MetaProgression.gd  # connexion du jour, missions, exploits, collection, guilde
 │   ├── StoryScreen.gd      # chapitres, textes et combats du mode histoire
 │   ├── DungeonScreen.gd    # donjons rejouables
 │   ├── TeamSelect.gd       # composition de l'équipe de 3 avant un combat
 │   ├── CombatArena.gd      # écran de combat (manuel + auto)
 │   ├── CombatUnit.gd       # vignette d'un combattant en combat
 │   ├── TitleScreen.gd      # écran d'accueil (état de la guilde, entrée en jeu)
-│   └── Tutorial.gd         # tutoriel mécanique de première partie
+│   ├── Tutorial.gd         # tutoriel mécanique de première partie
+│   ├── HeadquartersScreen.gd # quartier général : tout ce qui se réclame
+│   └── ArtViewer.gd        # visionneuse d'illustration plein écran
 ├── Tests/
 │   ├── run_tests.gd        # tests headless (voir « Lancer les tests »)
 │   ├── capture_screens.gd  # captures PNG des écrans (voir « Relire l'UI »)
@@ -84,6 +88,8 @@ Kurawa/
 │   ├── CombatUnit.tscn     # vignette de combattant
 │   ├── TitleScreen.tscn    # écran d'accueil
 │   ├── Tutorial.tscn       # tutoriel de première partie
+│   ├── HeadquartersScreen.tscn # quartier général
+│   ├── ArtViewer.tscn      # visionneuse plein écran
 │   └── GachaTest.tscn      # scène de debug Phase 1 (garde son propre PlayerManager)
 └── Assets/
     ├── Characters/         # illustrations des personnages
@@ -105,7 +111,7 @@ par l'auteur : ils définissent la direction visuelle décrite ci-dessous.
 
 **Ne pas sauter à la Phase 2 avant que la Phase 1 soit testée et fonctionnelle** (probabilités de tirage vérifiées, sauvegarde fiable).
 
-**État au 2026-09-24 :** Phases 1, 2 et 3 terminées et couvertes par `Tests/run_tests.gd` (106 vérifications), de l'écran d'accueil au combat gagné avec récompenses, tutoriel de première partie compris. Reste la Phase 4 : illustrations, audio, exports.
+**État au 2026-09-25 :** Phases 1 à 4 terminées, plus une Phase 5 d'approfondissement (combat tactique, 28 guerriers illustrés, visionneuse plein écran, boucles d'engagement). `Tests/run_tests.gd` : 152 vérifications. Reste l'audio et la signature iOS.
 
 ## Architecture Phases 1-2
 
@@ -176,6 +182,21 @@ Captures PNG de tous les écrans (nécessite un vrai rendu, donc **pas** `--head
   bascule lui-même sur l'onglet dont il parle
 - `CombatArena.step_delay` cadence l'affichage ; à 0 la boucle se déroule d'un trait
   (c'est ce que font les tests)
+
+## Boucles d'engagement
+
+`MetaProgression` (logique) + `HeadquartersScreen` (écran QG) portent la connexion quotidienne
+à valeur croissante avec pardon de série, l'invocation offerte du jour, trois missions
+quotidiennes tirées d'un lot, les exploits par paliers, les jalons de collection et le niveau
+de guilde. Le tout est décrit dans `Data/meta.json`.
+
+**Règle de conception :** le jeu n'a pas de monétisation, donc aucune de ces boucles ne doit
+pousser à dépenser ni jouer sur la peur de rater. Pas de timer qui détruit une récompense, pas
+de taux caché (vedette et taux sont affichés sur l'écran d'invocation), pas de série qui se
+casse quand on saute un jour. Ces boucles donnent des raisons de revenir, pas des raisons de
+s'inquiéter — si une idée de rétention ne tient pas sans monnaie réelle, elle n'a pas sa place ici.
+
+`PlayerManager` est le seul à créditer les récompenses (`claim_*`), comme pour le reste.
 
 ## Équilibrer
 

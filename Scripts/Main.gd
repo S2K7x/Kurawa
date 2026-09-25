@@ -9,16 +9,19 @@ const SUMMON_SCREEN := preload("res://Scenes/SummonScreen.tscn")
 const INVENTORY_SCREEN := preload("res://Scenes/InventoryGrid.tscn")
 const STORY_SCREEN := preload("res://Scenes/StoryScreen.tscn")
 const DUNGEON_SCREEN := preload("res://Scenes/DungeonScreen.tscn")
+const HQ_SCREEN := preload("res://Scenes/HeadquartersScreen.tscn")
 const TEAM_SELECT := preload("res://Scenes/TeamSelect.tscn")
 const COMBAT_ARENA := preload("res://Scenes/CombatArena.tscn")
 const TITLE_SCREEN := preload("res://Scenes/TitleScreen.tscn")
 const TUTORIAL := preload("res://Scenes/Tutorial.tscn")
+const ART_VIEWER := preload("res://Scenes/ArtViewer.tscn")
 
 @onready var _screen_host: Control = %ScreenHost
 @onready var _summon_nav: Button = %SummonNav
 @onready var _guild_nav: Button = %GuildNav
 @onready var _story_nav: Button = %StoryNav
 @onready var _dungeon_nav: Button = %DungeonNav
+@onready var _hq_nav: Button = %HqNav
 
 var player := PlayerManager.new()
 
@@ -29,24 +32,28 @@ var _arena: Control
 var _pending_encounter: Dictionary = {}
 var _title_screen: Control
 var _tutorial: Control
+var _art_viewer: Control
 
 func _ready() -> void:
 	add_child(player)
 	player.state_changed.connect(_refresh_top_bar)
 	_style_chrome()
 
-	for scene: PackedScene in [SUMMON_SCREEN, INVENTORY_SCREEN, STORY_SCREEN, DUNGEON_SCREEN]:
+	for scene: PackedScene in [HQ_SCREEN, SUMMON_SCREEN, INVENTORY_SCREEN, STORY_SCREEN, DUNGEON_SCREEN]:
 		_screens.append(_add_screen(scene))
 	_build_combat_overlay()
 
 	var nav_group := ButtonGroup.new()
-	var navs: Array[Button] = [_summon_nav, _guild_nav, _story_nav, _dungeon_nav]
+	var navs: Array[Button] = [_hq_nav, _summon_nav, _guild_nav, _story_nav, _dungeon_nav]
 	for index in range(navs.size()):
 		navs[index].button_group = nav_group
 		navs[index].toggle_mode = true
 		navs[index].pressed.connect(_show.bind(_screens[index]))
 
-	_show(_screens[0])
+	# On ouvre sur la Brèche, pas sur le QG : le premier écran doit donner envie de jouer,
+	# pas présenter une liste de tâches.
+	_summon_nav.button_pressed = true
+	_show(_screens[1])
 	_build_front_overlay()
 	%RefreshTimer.timeout.connect(_refresh_top_bar)
 	_refresh_top_bar()
@@ -79,7 +86,7 @@ func _style_chrome() -> void:
 	%StaminaLabel.add_theme_stylebox_override("normal", _pill_style())
 	%StaminaLabel.add_theme_color_override("font_color", Color("#6fb98f"))
 
-	for nav: Button in [_summon_nav, _guild_nav, _story_nav, _dungeon_nav]:
+	for nav: Button in [_hq_nav, _summon_nav, _guild_nav, _story_nav, _dungeon_nav]:
 		nav.add_theme_stylebox_override("normal", Style.nav_tab(Color(0, 0, 0, 0)))
 		nav.add_theme_stylebox_override("hover", Style.nav_tab(Color(Style.GOLD, 0.35), 2))
 		nav.add_theme_stylebox_override("pressed", Style.nav_tab(Style.CRIMSON_BRIGHT, 3))
@@ -102,6 +109,10 @@ func _add_screen(scene: PackedScene) -> Control:
 	screen.setup(player)
 	if screen.has_signal("encounter_requested"):
 		screen.encounter_requested.connect(_on_encounter_requested)
+	if screen.has_signal("artwork_requested"):
+		screen.artwork_requested.connect(_on_artwork_requested)
+	if screen.has_signal("summon_requested"):
+		screen.summon_requested.connect(_on_free_summon_requested)
 	screen.hide()
 	return screen
 
@@ -137,10 +148,24 @@ func _build_front_overlay() -> void:
 	_tutorial.step_changed.connect(_on_tutorial_step)
 	_tutorial.closed.connect(func() -> void: player.mark_tutorial_seen())
 
+	# La visionneuse passe au-dessus des écrans mais sous l'accueil et le tutoriel.
+	_art_viewer = ART_VIEWER.instantiate()
+	overlay.add_child(_art_viewer)
+	_art_viewer.setup(player)
+
 	_title_screen = TITLE_SCREEN.instantiate()
 	overlay.add_child(_title_screen)
 	_title_screen.setup(player)
 	_title_screen.entered.connect(_on_entered)
+
+## Le QG renvoie vers la Brèche pour l'invocation offerte : c'est là qu'elle se vit.
+func _on_free_summon_requested() -> void:
+	_summon_nav.button_pressed = true
+	_show(_screens[1])
+	_screens[1]._on_free_summon()
+
+func _on_artwork_requested(character_id: String, ids: Array) -> void:
+	_art_viewer.open(character_id, ids)
 
 func _on_entered() -> void:
 	_title_screen.hide()
@@ -152,7 +177,7 @@ func _on_entered() -> void:
 func _on_tutorial_step(nav_name: String) -> void:
 	if nav_name == "":
 		return
-	var navs := {"SummonNav": 0, "GuildNav": 1, "StoryNav": 2, "DungeonNav": 3}
+	var navs := {"HqNav": 0, "SummonNav": 1, "GuildNav": 2, "StoryNav": 3, "DungeonNav": 4}
 	if not navs.has(nav_name):
 		return
 	var index: int = navs[nav_name]

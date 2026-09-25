@@ -10,6 +10,7 @@ const ENEMIES_PATH := "res://Data/enemies.json"
 const STORY_PATH := "res://Data/story.json"
 const DUNGEONS_PATH := "res://Data/dungeons.json"
 const TUTORIAL_PATH := "res://Data/tutorial.json"
+const META_PATH := "res://Data/meta.json"
 
 const FALLBACK_COLOR := Color(1, 1, 1)
 

@@ -354,10 +354,19 @@ func _finish() -> void:
 		granted = _player.grant_victory(_team_ids,
 			ContentLibrary.battle_rewards(_encounter.get("enemies", []),
 				float(_encounter.get("or_multiplier", 1.0)), float(_encounter.get("xp_multiplier", 1.0))),
-			str(_encounter.get("chapter_id", "")), int(_encounter.get("battle_index", -1)))
+			str(_encounter.get("chapter_id", "")), int(_encounter.get("battle_index", -1)),
+			_battle_stats())
 	else:
-		_player.record_defeat(_team_ids)
+		_player.record_defeat(_team_ids, _battle_stats())
 	_show_result(victory, granted)
+
+## Ce que le combat a produit et qui intéresse la méta-progression (missions, exploits).
+func _battle_stats() -> Dictionary:
+	var ultimates := 0
+	for event: Dictionary in _combat.events:
+		if event.get("kind", "") == "ultimate":
+			ultimates += 1
+	return {"ultimates": ultimates}
 
 func _show_result(victory: bool, granted: Dictionary) -> void:
 	%ResultTitle.text = "VICTOIRE" if victory else "DÉFAITE"
@@ -367,6 +376,8 @@ func _show_result(victory: bool, granted: Dictionary) -> void:
 	if victory:
 		lines.append("⬢ [b]%d[/b] Or de guilde" % int(granted.get("or", 0)))
 		lines.append("✦ [b]%d[/b] XP pour chaque guerrier engagé" % int(granted.get("xp", 0)))
+		if int(granted.get("guild_levels", 0)) > 0:
+			lines.append("[color=#e3d3a8]Guilde niveau %d ![/color]" % _player.meta.guild_level)
 		for character_id: String in granted.get("level_ups", {}):
 			lines.append("[color=#e3d3a8]%s passe %d niveau(x)[/color]" % [
 				_player.get_character_data(character_id).get("name", "?"),

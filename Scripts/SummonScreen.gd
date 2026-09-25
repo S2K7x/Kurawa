@@ -39,6 +39,20 @@ func _ready() -> void:
 
 	_pull_button.pressed.connect(_on_summon.bind(false))
 	_pull_x10_button.pressed.connect(_on_summon.bind(true))
+	%FreeButton.pressed.connect(_on_free_summon)
+	%FreeButton.add_theme_stylebox_override("normal", Style.action_button(Color(Style.CRIMSON, 0.45), Style.GOLD, 12))
+	%FreeButton.add_theme_stylebox_override("hover", Style.action_button(Style.CRIMSON_BRIGHT, Style.GOLD, 12))
+	_refresh()
+
+## L'invocation offerte du jour : le rendez-vous quotidien, sans contrepartie.
+func _on_free_summon() -> void:
+	var results := _player.summon(false, true)
+	if results.is_empty():
+		_message.text = "L'invocation offerte a déjà été utilisée aujourd'hui."
+		return
+	_message.text = ""
+	_portal.flare()
+	_reveal.start(results)
 	_refresh()
 
 func on_shown() -> void:
@@ -70,3 +84,10 @@ func _refresh() -> void:
 	%SsrLabel.text = "SSR GARANTI DANS %d TIRAGE(S)" % maxi(gacha.pity_ssr_threshold - gacha.pulls_since_ssr, 0)
 	%SsrBar.max_value = gacha.pity_ssr_threshold
 	%SsrBar.value = gacha.pulls_since_ssr
+
+	%FreeButton.visible = _player.meta.has_free_summon()
+	var featured := _player.get_character_data(gacha.featured_id)
+	%Featured.text = "" if featured.is_empty() else \
+		"VEDETTE DE LA SEMAINE : %s — %d%% DES SSR" % [str(featured.get("name", "")).to_upper(),
+			roundi(gacha.featured_share * 100)]
+	%Featured.add_theme_color_override("font_color", Style.GOLD)
