@@ -31,6 +31,13 @@ Pour ranger une illustration ailleurs, ajouter un champ `art` à la fiche du gue
   tiers supérieur** de l'illustration.
 - Fond : sombre ou détouré. Les cartes vivent sur une interface noire ; un fond blanc jure.
 
+## Guerriers en attente d'illustration
+
+- `kur_029` **Naeve Corlis** (Eau, SSR) — prompt de sujet à saisir dans
+  `Tools/art_generator.html`, gabarit « Guerrier jouable », aura Eau :
+  *« femme calme aux longs cheveux d'argent mouillés, robe de cérémonie bleu nuit,
+  mains ouvertes d'où ruisselle un courant, regard apaisé »*
+
 ## Après avoir déposé des fichiers
 
 ```bash

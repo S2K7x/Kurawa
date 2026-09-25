@@ -986,6 +986,47 @@
           }
         ]
       }
+    },
+    {
+      "id": "kur_029",
+      "name": "Naeve Corlis",
+      "origin": "Hauts-Fonds de Velune",
+      "element": "Eau",
+      "rarity": "SSR",
+      "stats": {
+        "atk": 185,
+        "def": 175,
+        "vit": 148,
+        "pv": 1600
+      },
+      "skill": {
+        "name": "Courant Porteur",
+        "description": "Ne frappe pas : lave les altérations de l'équipe, la pousse en avant dans l'ordre des tours et la presse pendant 2 tours.",
+        "target": "ally_all",
+        "power": 0.0,
+        "hits": 0,
+        "cooldown": 5,
+        "effects": [
+          {
+            "type": "cleanse",
+            "target": "ally_all",
+            "chance": 1.0
+          },
+          {
+            "type": "atb_boost",
+            "target": "ally_all",
+            "chance": 1.0,
+            "value": 0.3
+          },
+          {
+            "type": "speed_up",
+            "target": "ally_all",
+            "chance": 1.0,
+            "duration": 2,
+            "value": 0.2
+          }
+        ]
+      }
     }
   ],
   "basic_attack": {
