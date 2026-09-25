@@ -707,6 +707,285 @@
           }
         ]
       }
+    },
+    {
+      "id": "kur_021",
+      "name": "Vesna Idrel",
+      "origin": "Courants Hauts de Kaelin",
+      "element": "Vent",
+      "rarity": "SR",
+      "stats": {
+        "atk": 140,
+        "def": 105,
+        "vit": 150,
+        "pv": 1050
+      },
+      "skill": {
+        "name": "Appel du Souffle",
+        "description": "Souffle dans le dos de l'équipe : tout le monde agit plus tôt, et plus vite.",
+        "target": "ally_all",
+        "power": 0.0,
+        "hits": 0,
+        "cooldown": 4,
+        "effects": [
+          {
+            "type": "atb_boost",
+            "target": "ally_all",
+            "chance": 1.0,
+            "value": 0.3
+          },
+          {
+            "type": "speed_up",
+            "target": "ally_all",
+            "chance": 1.0,
+            "duration": 2,
+            "value": 0.2
+          }
+        ]
+      }
+    },
+    {
+      "id": "kur_022",
+      "name": "Karn Oblis",
+      "origin": "Poste Avancé de Nordheim",
+      "element": "Foudre",
+      "rarity": "SR",
+      "stats": {
+        "atk": 155,
+        "def": 115,
+        "vit": 120,
+        "pv": 1150
+      },
+      "skill": {
+        "name": "Gel Statique",
+        "description": "Fige l'air : l'ennemi recule dans l'ordre des tours, et peut rester cloué.",
+        "target": "enemy_all",
+        "power": 1.0,
+        "hits": 1,
+        "cooldown": 4,
+        "effects": [
+          {
+            "type": "atb_cut",
+            "target": "target",
+            "chance": 1.0,
+            "value": 0.25
+          },
+          {
+            "type": "stun",
+            "target": "target",
+            "chance": 0.25,
+            "duration": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "kur_023",
+      "name": "Maelis Fend",
+      "origin": "Source de Sylverne",
+      "element": "Eau",
+      "rarity": "SR",
+      "stats": {
+        "atk": 130,
+        "def": 125,
+        "vit": 110,
+        "pv": 1250
+      },
+      "skill": {
+        "name": "Eau Claire",
+        "description": "Lave l'équipe de ce qui la ronge et referme les plaies pendant deux tours.",
+        "target": "ally_all",
+        "power": 0.0,
+        "hits": 0,
+        "cooldown": 4,
+        "effects": [
+          {
+            "type": "cleanse",
+            "target": "ally_all",
+            "chance": 1.0
+          },
+          {
+            "type": "heal_per_turn",
+            "target": "ally_all",
+            "chance": 1.0,
+            "duration": 2,
+            "value": 0.5
+          }
+        ]
+      }
+    },
+    {
+      "id": "kur_024",
+      "name": "Tarn Vekk",
+      "origin": "Fosse de Combat d'Emberlyn",
+      "element": "Feu",
+      "rarity": "SR",
+      "stats": {
+        "atk": 150,
+        "def": 145,
+        "vit": 85,
+        "pv": 1400
+      },
+      "skill": {
+        "name": "Peau de Braise",
+        "description": "Se met en posture : toute attaque reçue est rendue, et fait moins mal.",
+        "target": "self",
+        "power": 0.0,
+        "hits": 0,
+        "cooldown": 4,
+        "effects": [
+          {
+            "type": "counter",
+            "target": "self",
+            "chance": 1.0,
+            "duration": 3,
+            "value": 0.9
+          },
+          {
+            "type": "damage_reduction",
+            "target": "self",
+            "chance": 1.0,
+            "duration": 3,
+            "value": 0.25
+          }
+        ]
+      }
+    },
+    {
+      "id": "kur_025",
+      "name": "Ilva Sorne",
+      "origin": "Atelier d'Ohm",
+      "element": "Foudre",
+      "rarity": "R",
+      "stats": {
+        "atk": 115,
+        "def": 70,
+        "vit": 110,
+        "pv": 820
+      },
+      "skill": {
+        "name": "Faille d'Armure",
+        "description": "Perce la plaque : la cible encaisse bien plus pendant deux tours.",
+        "target": "enemy_single",
+        "power": 1.35,
+        "hits": 1,
+        "cooldown": 3,
+        "effects": [
+          {
+            "type": "def_down",
+            "target": "target",
+            "chance": 1.0,
+            "duration": 2,
+            "value": 0.3
+          }
+        ]
+      }
+    },
+    {
+      "id": "kur_026",
+      "name": "Roque Hadal",
+      "origin": "Quais de Thassar",
+      "element": "Eau",
+      "rarity": "R",
+      "stats": {
+        "atk": 95,
+        "def": 105,
+        "vit": 75,
+        "pv": 1050
+      },
+      "skill": {
+        "name": "Crampon",
+        "description": "Accroche la cible et lui casse le bras : elle frappe moins fort.",
+        "target": "enemy_single",
+        "power": 1.2,
+        "hits": 1,
+        "cooldown": 3,
+        "effects": [
+          {
+            "type": "atk_down",
+            "target": "target",
+            "chance": 1.0,
+            "duration": 2,
+            "value": 0.25
+          }
+        ]
+      }
+    },
+    {
+      "id": "kur_027",
+      "name": "Nael Ystra",
+      "origin": "Cité Volante de Skarn",
+      "element": "Vent",
+      "rarity": "SSR",
+      "stats": {
+        "atk": 200,
+        "def": 135,
+        "vit": 165,
+        "pv": 1380
+      },
+      "skill": {
+        "name": "Rupture du Zéphyr",
+        "description": "Balaie le champ : les renforts adverses tombent et tout le monde recule.",
+        "target": "enemy_all",
+        "power": 1.4,
+        "hits": 1,
+        "cooldown": 5,
+        "effects": [
+          {
+            "type": "strip",
+            "target": "target",
+            "chance": 1.0
+          },
+          {
+            "type": "atb_cut",
+            "target": "target",
+            "chance": 1.0,
+            "value": 0.2
+          }
+        ]
+      }
+    },
+    {
+      "id": "kur_028",
+      "name": "Cendre Valk",
+      "origin": "Tribunal de Cendres",
+      "element": "Feu",
+      "rarity": "SSR",
+      "stats": {
+        "atk": 225,
+        "def": 150,
+        "vit": 130,
+        "pv": 1520
+      },
+      "skill": {
+        "name": "Ordalie",
+        "description": "Rend son jugement : tout brûle, les défenses cèdent, et elle frappe encore.",
+        "target": "enemy_all",
+        "power": 1.5,
+        "hits": 1,
+        "cooldown": 5,
+        "effects": [
+          {
+            "type": "burn",
+            "target": "target",
+            "chance": 1.0,
+            "duration": 2,
+            "value": 0.13
+          },
+          {
+            "type": "def_down",
+            "target": "target",
+            "chance": 1.0,
+            "duration": 2,
+            "value": 0.25
+          },
+          {
+            "type": "extra_turn",
+            "target": "self",
+            "chance": 0.4
+          }
+        ]
+      }
     }
   ],
   "basic_attack": {
