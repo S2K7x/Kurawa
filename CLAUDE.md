@@ -71,7 +71,11 @@ Kurawa/
 │   ├── TitleScreen.gd      # écran d'accueil (état de la guilde, entrée en jeu)
 │   ├── Tutorial.gd         # tutoriel mécanique de première partie
 │   ├── HeadquartersScreen.gd # quartier général : tout ce qui se réclame
-│   └── ArtViewer.gd        # visionneuse d'illustration plein écran
+│   ├── ArtViewer.gd        # visionneuse d'illustration plein écran
+│   └── GuildCrest.gd       # blason de la guilde (dessiné, ou illustration si fournie)
+├── Tools/                  # outillage hors jeu, exclu des builds
+│   ├── art_generator.html  # atelier de génération d'illustrations (voir « Générer une illustration »)
+│   └── preview_crest.gd    # rend le blason seul, en grand
 ├── Tests/
 │   ├── run_tests.gd        # tests headless (voir « Lancer les tests »)
 │   ├── capture_screens.gd  # captures PNG des écrans (voir « Relire l'UI »)
@@ -94,7 +98,8 @@ Kurawa/
 │   ├── ArtViewer.tscn      # visionneuse plein écran
 │   └── GachaTest.tscn      # scène de debug Phase 1 (garde son propre PlayerManager)
 └── Assets/
-    ├── Characters/         # illustrations des personnages
+    ├── Characters/         # illustrations des guerriers (README : gabarit de prompt)
+    ├── Enemies/            # illustrations des mobs et des boss (README : gabarit de prompt)
     ├── UI/
     │   ├── kurawa_theme.tres # thème global (couleurs, polices, variations de type)
     │   └── Fonts/          # Cinzel (titres) + Inter (corps), licences OFL incluses
@@ -113,7 +118,7 @@ par l'auteur : ils définissent la direction visuelle décrite ci-dessous.
 
 **Ne pas sauter à la Phase 2 avant que la Phase 1 soit testée et fonctionnelle** (probabilités de tirage vérifiées, sauvegarde fiable).
 
-**État au 2026-09-25 :** Phases 1 à 4 terminées, plus une Phase 5 d'approfondissement (combat tactique, 28 guerriers illustrés, visionneuse plein écran, boucles d'engagement). `Tests/run_tests.gd` : 157 vérifications. Reste l'audio et la signature iOS.
+**État au 2026-09-25 :** Phases 1 à 4 terminées, plus une Phase 5 d'approfondissement (combat tactique, visionneuse plein écran, boucles d'engagement). 29 guerriers, dont 28 illustrés (`kur_029` en attente). `Tests/run_tests.gd` : 157 vérifications. Reste l'audio, les illustrations d'adversaires, et la signature iOS.
 
 ## Architecture Phases 1-2
 
@@ -232,6 +237,32 @@ Pièges déjà corrigés, à ne pas réintroduire :
 Affiche le taux de victoire de chaque combat pour une équipe type à différents niveaux.
 Lecture : 0% = mur infranchissable · 40-70% = combat tendu · 100% = trop facile. À relancer
 après toute modification de stats, de compétences ou de contenu.
+
+## Générer une illustration
+
+Deux voies, selon qui tient le clavier.
+
+**Canva** (ce qui a produit le roster) : Claude Code y a accès en session et peut générer
+directement, au gabarit, à la bonne taille — l'illustration arrive en 1024×1536. En revanche
+le CDN de Canva **signe les dimensions dans l'URL** : seule la vignette 133×200 est
+téléchargeable par script, pas l'originale. Le fichier se récupère donc d'un clic depuis le
+lien Canva, puis se dépose dans `Assets/`. C'est une étape manuelle incompressible.
+
+**`Tools/art_generator.html`** (Perchance) : atelier local, à **ouvrir dans un vrai
+navigateur**, pas à appeler depuis Godot ni depuis un script. L'API de Perchance n'est pas un
+service HTTP — c'est une page web qui génère dans le navigateur de l'appelant, derrière
+Cloudflare : un `curl` ou un `HTTPRequest` reçoit un 403, toujours. L'atelier fait le
+`warmUp()` en iframe, empile une file de prompts, et rend les images déjà nommées d'après leur
+identifiant, téléchargeables sans quitter la page.
+
+Les gabarits (guerrier, boss, mob, emblème, décor) encodent le prompt de référence de
+`Assets/Characters/README.md`. **Ne pas improviser un prompt hors gabarit** : la galerie
+tient son unité de là.
+
+Le texte, lui, ne passe jamais par la génération d'images — ces modèles le déforment
+systématiquement. Tout ce qui est lettre ou mot (le wordmark KURAWA, les libellés) est
+composé en Cinzel par le moteur, et le blason est dessiné (`Scripts/GuildCrest.gd`,
+voir `Assets/UI/CREST.md`).
 
 ## Ajouter une illustration
 
