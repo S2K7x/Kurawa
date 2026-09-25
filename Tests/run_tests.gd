@@ -27,6 +27,8 @@ func _initialize() -> void:
 	test_stamina()
 	test_save_roundtrip()
 	test_corrupt_save()
+	test_save_robustness()
+	test_combat_deadlock()
 	test_data_integrity()
 	test_skill_data()
 	test_combat()
@@ -207,6 +209,53 @@ func test_save_roundtrip() -> void:
 	check(not FileAccess.file_exists(TEST_SAVE_PATH + ".tmp"), "aucun fichier temporaire résiduel")
 	player.free()
 	reloaded.free()
+
+## Robustesse de la sauvegarde : version future refusée, entrées aberrantes rattrapées.
+func test_save_robustness() -> void:
+	print("Sauvegarde : cas limites")
+	var future := {"version": 999, "eclats_dimensionnels": 42}
+	var file := FileAccess.open(TEST_SAVE_PATH, FileAccess.WRITE)
+	file.store_string(JSON.stringify(future))
+	file.close()
+	var player := PlayerManager.new()
+	player.save_path = TEST_SAVE_PATH
+	player.load_or_new_game()
+	check(player.eclats_dimensionnels == 300, "une sauvegarde d'une version future n'est pas chargée")
+	check(FileAccess.file_exists(TEST_SAVE_PATH + ".future"), "elle est mise de côté intacte en .future")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE_PATH + ".future"))
+	player.free()
+
+	# Entrées d'inventaire aberrantes : types faux et valeurs hors bornes.
+	var broken := {
+		"version": PlayerManager.SAVE_VERSION,
+		"eclats_dimensionnels": 100, "or_de_guilde": 100,
+		"inventory": {"kur_001": "n'importe quoi", "kur_002": {"level": 9999, "stars": -3, "xp": -50}},
+	}
+	file = FileAccess.open(TEST_SAVE_PATH, FileAccess.WRITE)
+	file.store_string(JSON.stringify(broken))
+	file.close()
+	var salvaged := PlayerManager.new()
+	salvaged.save_path = TEST_SAVE_PATH
+	salvaged.load_or_new_game()
+	check(salvaged.inventory.has("kur_001") and int(salvaged.inventory["kur_001"]["level"]) == 1,
+		"une entrée du mauvais type est remplacée par un guerrier neuf")
+	check(int(salvaged.inventory["kur_002"]["level"]) <= salvaged.progression.max_level
+		and int(salvaged.inventory["kur_002"]["stars"]) >= 1
+		and int(salvaged.inventory["kur_002"]["xp"]) >= 0,
+		"les valeurs hors bornes sont ramenées dans le domaine valide")
+	salvaged.free()
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(TEST_SAVE_PATH))
+
+## Un combat sans vitesse ne doit pas boucler à l'infini : il se déclare nul.
+func test_combat_deadlock() -> void:
+	print("Combat : blocage impossible")
+	var stuck := CombatManager.new()
+	stuck.rng.seed = 21
+	var frozen := _combatant("Statue", "Feu", 100, 50, 0, 900, true)
+	var other := _combatant("Totem", "Feu", 100, 50, 0, 900, false)
+	stuck.start([frozen] as Array[Combatant], [other] as Array[Combatant])
+	check(stuck.auto_resolve() == CombatManager.Result.DRAW,
+		"deux combattants immobiles font match nul au lieu de bloquer la boucle")
 
 func test_corrupt_save() -> void:
 	print("Sauvegarde corrompue")

@@ -29,6 +29,8 @@ signal artwork_requested(character_id: String, ids: Array)
 @onready var _detail_art_button: Button = %DetailArtButton
 
 var _player: PlayerManager
+## Vrai si l'écran a raté un rafraîchissement pendant qu'il était caché.
+var _stale: bool = true
 var _rarity_filter: String = ALL
 var _element_filter: String = ALL
 var _sort: String = SORTS[0]
@@ -61,6 +63,7 @@ func _ready() -> void:
 	_refresh()
 
 func on_shown() -> void:
+	show()
 	_refresh()
 
 ## Rangée de boutons exclusifs (filtre ou tri). `active` désigne celui coché au départ.
@@ -138,7 +141,13 @@ func _name_of(character_id: String) -> String:
 func _refresh() -> void:
 	if _player == null or not is_node_ready():
 		return
-	_clear(_grid)
+	# Un écran caché n'a rien à reconstruire : on_shown() le rafraîchira quand il
+	# reviendra au premier plan.
+	if not visible:
+		_stale = true
+		return
+	_stale = false
+	UiUtils.clear_children(_grid)
 	var ids := _filtered_ids()
 	_header.text = "LA GUILDE"
 	%CountLabel.text = "%d GUERRIER%s AFFICHÉ%s · %d AU TOTAL" % [
@@ -162,7 +171,7 @@ func _show_detail(character_id: String) -> void:
 	var base: Dictionary = data.get("stats", {})
 	var element := str(data.get("element", ""))
 
-	_clear(_detail_card)
+	UiUtils.clear_children(_detail_card)
 	var preview: CharacterCard = CARD_SCENE.instantiate()
 	preview.custom_minimum_size = Vector2(168, 252)
 	preview.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -213,9 +222,3 @@ func _show_detail(character_id: String) -> void:
 func _section(title: String) -> String:
 	return "[color=#e3d3a8][b]%s[/b][/color]" % title
 
-## Vide un conteneur immédiatement : queue_free() seul laisse les enfants dans l'arbre
-## jusqu'à la fin de la frame, ce qui fausserait le comptage juste après.
-func _clear(host: Node) -> void:
-	for child: Node in host.get_children():
-		host.remove_child(child)
-		child.queue_free()

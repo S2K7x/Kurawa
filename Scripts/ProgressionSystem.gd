@@ -14,7 +14,7 @@ var max_stars: int = 6
 var tiers: Array = []
 
 func _init() -> void:
-	var config: Dictionary = DataLoader.load_json(DataLoader.ECONOMY_PATH).get("progression", {})
+	var config: Dictionary = DataLoader.economy().get("progression", {})
 	max_level = int(config.get("max_level", max_level))
 	xp_base = float(config.get("xp_base", xp_base))
 	xp_growth = float(config.get("xp_growth", xp_growth))

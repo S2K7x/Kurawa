@@ -41,7 +41,7 @@ func _init() -> void:
 
 func _load_config() -> void:
 	var db := DataLoader.characters_db()
-	var economy := DataLoader.load_json(DataLoader.ECONOMY_PATH)
+	var economy := DataLoader.economy()
 	var gacha: Dictionary = economy.get("gacha", {})
 	var multi: Dictionary = gacha.get("multi_pull", {})
 	var pity: Dictionary = gacha.get("pity", {})

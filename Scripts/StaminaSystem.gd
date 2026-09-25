@@ -17,7 +17,7 @@ var _last_tick: float = 0.0
 var clock: Callable = Time.get_unix_time_from_system
 
 func _init() -> void:
-	var config: Dictionary = DataLoader.load_json(DataLoader.ECONOMY_PATH).get("stamina", {})
+	var config: Dictionary = DataLoader.economy().get("stamina", {})
 	max_stamina = int(config.get("max", max_stamina))
 	recharge_seconds = float(config.get("recharge_seconds", recharge_seconds))
 	cost_per_combat = int(config.get("cost_per_combat", cost_per_combat))

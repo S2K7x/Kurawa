@@ -56,7 +56,7 @@ func _reveal_current() -> void:
 	_note.add_theme_color_override("font_color", Style.GOLD if not result.get("is_new", false) else color)
 	_pop_note(duration_for(str(result.get("rarity", "R"))))
 
-	_clear(_card_host)
+	UiUtils.clear_children(_card_host)
 	var card: CharacterCard = CARD_SCENE.instantiate()
 	card.custom_minimum_size = REVEAL_CARD_SIZE
 	card.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
@@ -133,7 +133,7 @@ func _show_summary() -> void:
 	_burst.progress = 0.0
 	%SkipButton.hide()
 	_flash.color.a = 0.0
-	_clear(_grid)
+	UiUtils.clear_children(_grid)
 	for result: Dictionary in _results:
 		var card: CharacterCard = CARD_SCENE.instantiate()
 		card.custom_minimum_size = SUMMARY_CARD_SIZE
@@ -154,9 +154,3 @@ func _gui_input(event: InputEvent) -> void:
 		_advance()
 		accept_event()
 
-## Vide un conteneur immédiatement : queue_free() seul laisse les enfants dans l'arbre
-## jusqu'à la fin de la frame, ce qui fausserait le comptage juste après.
-func _clear(host: Node) -> void:
-	for child: Node in host.get_children():
-		host.remove_child(child)
-		child.queue_free()

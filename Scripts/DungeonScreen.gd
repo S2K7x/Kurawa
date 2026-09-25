@@ -9,6 +9,8 @@ signal encounter_requested(encounter: Dictionary)
 @onready var _list: VBoxContainer = %List
 
 var _player: PlayerManager
+## Vrai si l'écran a raté un rafraîchissement pendant qu'il était caché.
+var _stale: bool = true
 
 func setup(player: PlayerManager) -> void:
 	_player = player
@@ -22,14 +24,19 @@ func _ready() -> void:
 	_refresh()
 
 func on_shown() -> void:
+	show()
 	_refresh()
 
 func _refresh() -> void:
 	if _player == null or not is_node_ready():
 		return
-	for child: Node in _list.get_children():
-		_list.remove_child(child)
-		child.queue_free()
+	# Un écran caché n'a rien à reconstruire : on_shown() le rafraîchira quand il
+	# reviendra au premier plan.
+	if not visible:
+		_stale = true
+		return
+	_stale = false
+	UiUtils.clear_children(_list)
 	for dungeon: Dictionary in ContentLibrary.dungeons():
 		_list.add_child(_build_dungeon(dungeon))
 

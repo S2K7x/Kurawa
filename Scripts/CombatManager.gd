@@ -50,10 +50,12 @@ var breach_gauge: int = 0
 var _enraged: bool = false
 # Garde-fou contre les ripostes qui se répondent en boucle.
 var _countering: bool = false
+# Vrai si plus aucun combattant ne peut agir : le combat est déclaré nul.
+var _stalled: bool = false
 
 func _init() -> void:
 	rng.randomize()
-	var config: Dictionary = DataLoader.load_json(DataLoader.ECONOMY_PATH).get("combat", {})
+	var config: Dictionary = DataLoader.economy().get("combat", {})
 	_atb_threshold = float(config.get("atb_threshold", _atb_threshold))
 	_atb_speed_factor = float(config.get("atb_speed_factor", _atb_speed_factor))
 	_defense_constant = float(config.get("defense_constant", _defense_constant))
@@ -97,7 +99,7 @@ static func from_character(character: Dictionary, stats: Dictionary, skill: Dict
 ## La courbe de stats est la même que celle des guerriers (economy.json > progression).
 static func from_enemy(enemy_id: String, level: int) -> Combatant:
 	var data := DataLoader.enemy(enemy_id)
-	var growth := float(DataLoader.load_json(DataLoader.ECONOMY_PATH)
+	var growth := float(DataLoader.economy()
 		.get("progression", {}).get("stat_growth_per_level_pct", 5.0))
 	var multiplier := 1.0 + (maxi(level, 1) - 1) * growth / 100.0
 	var stats: Dictionary = data.get("stats", {})
@@ -124,6 +126,7 @@ func start(ally_team: Array[Combatant], enemy_team: Array[Combatant]) -> void:
 	turn_count = 0
 	breach_gauge = 0
 	_enraged = false
+	_stalled = false
 	for unit: Combatant in allies + enemies:
 		unit.atb = 0.0
 	_log({"kind": "combat_start", "allies": _names(allies), "enemies": _names(enemies)})
@@ -135,7 +138,7 @@ func result() -> int:
 	var allies_alive := _living(allies).size() > 0
 	var enemies_alive := _living(enemies).size() > 0
 	if allies_alive and enemies_alive:
-		return Result.DRAW if turn_count >= _max_turns else Result.ONGOING
+		return Result.DRAW if _stalled or turn_count >= _max_turns else Result.ONGOING
 	if allies_alive:
 		return Result.VICTORY
 	if enemies_alive:
@@ -150,6 +153,10 @@ func begin_turn() -> Combatant:
 		return null
 	var actor := _advance_atb()
 	if actor == null:
+		# Aucune jauge ne peut plus avancer (vitesses nulles) : on arrête le combat au lieu
+		# de laisser l'appelant boucler sur des tours qui ne viendront jamais.
+		_stalled = true
+		_log({"kind": "stalled"})
 		return null
 	turn_count += 1
 	actor.atb -= _atb_threshold

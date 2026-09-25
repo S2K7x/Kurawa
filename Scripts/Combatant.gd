@@ -72,12 +72,14 @@ func is_stunned() -> bool:
 
 ## Consomme une charge d'esquive si le combattant en a une. Retourne true s'il esquive.
 func consume_dodge() -> bool:
-	for status: Dictionary in statuses:
-		if status.get("type", "") == "dodge":
-			status["charges"] = int(status.get("charges", 1)) - 1
-			if int(status["charges"]) <= 0:
-				statuses.erase(status)
-			return true
+	for index in range(statuses.size()):
+		var status: Dictionary = statuses[index]
+		if status.get("type", "") != "dodge":
+			continue
+		status["charges"] = int(status.get("charges", 1)) - 1
+		if int(status["charges"]) <= 0:
+			statuses.remove_at(index)
+		return true
 	return false
 
 ## Retire les altérations d'une famille. Retourne le nombre d'altérations retirées.

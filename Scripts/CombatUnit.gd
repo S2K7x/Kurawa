@@ -53,7 +53,7 @@ func _build() -> void:
 		_portrait.texture = _portrait_texture(color)
 		_portrait.stretch_mode = TextureRect.STRETCH_SCALE
 		_initials.show()
-		_initials.text = _initials_of(unit.name)
+		_initials.text = UiUtils.initials(unit.name)
 	_name.text = unit.name
 	_hp_bar.add_theme_stylebox_override("fill", _bar_style(Style.CRIMSON_BRIGHT if not unit.is_ally else Color("#4e9a63")))
 	_atb_bar.add_theme_stylebox_override("fill", _bar_style(Style.GOLD_DIM))
@@ -118,11 +118,6 @@ func _portrait_texture(color: Color) -> GradientTexture2D:
 	texture.height = 64
 	return texture
 
-func _initials_of(character_name: String) -> String:
-	var initials := ""
-	for part: String in character_name.split(" ", false):
-		initials += part.substr(0, 1).to_upper()
-	return initials
 
 ## Encaisse un coup à l'écran : la vignette blanchit et tressaute brièvement.
 ## Purement cosmétique — les PV, eux, ont déjà été retirés par le moteur.

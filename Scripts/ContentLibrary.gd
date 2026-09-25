@@ -37,7 +37,7 @@ static func dungeon_encounter(dungeon_id: String, tier_index: int) -> Array:
 ## Récompenses d'une victoire : le barème de base monte avec le niveau des adversaires,
 ## puis se multiplie par le type de contenu (un donjon d'Or paye mieux en Or, etc.).
 static func battle_rewards(enemies: Array, or_multiplier: float = 1.0, xp_multiplier: float = 1.0) -> Dictionary:
-	var config: Dictionary = DataLoader.load_json(DataLoader.ECONOMY_PATH).get("rewards", {})
+	var config: Dictionary = DataLoader.economy().get("rewards", {})
 	var base_or := float(config.get("base_or", 120))
 	var base_xp := float(config.get("base_xp", 80))
 	var per_level := float(config.get("per_enemy_level_pct", 12)) / 100.0

@@ -45,7 +45,7 @@ func _ready() -> void:
 ## Répercute sur les systèmes ce que la méta-progression décide : plafond d'énergie relevé
 ## par le niveau de guilde, et guerrier mis en avant par la bannière du moment.
 func _sync_meta_bonuses() -> void:
-	var base_max := int(DataLoader.load_json(DataLoader.ECONOMY_PATH).get("stamina", {}).get("max", 120))
+	var base_max := int(DataLoader.economy().get("stamina", {}).get("max", 120))
 	stamina.max_stamina = base_max + meta.bonus_stamina()
 	var ssr_ids: Array = []
 	for character: Dictionary in DataLoader.characters_db().get("characters", []):
@@ -89,7 +89,7 @@ func load_or_new_game() -> void:
 		new_game()
 
 func new_game() -> void:
-	var start: Dictionary = DataLoader.load_json(DataLoader.ECONOMY_PATH).get("starting_resources", {})
+	var start: Dictionary = DataLoader.economy().get("starting_resources", {})
 	eclats_dimensionnels = int(start.get("eclats_dimensionnels", 0))
 	or_de_guilde = int(start.get("or_de_guilde", 0))
 	inventory = {}
@@ -153,6 +153,18 @@ func load_game() -> bool:
 		DirAccess.copy_absolute(save_path, save_path + ".corrupt")
 		return false
 	var data: Dictionary = parsed
+	# Une sauvegarde plus récente que le jeu ne peut pas être lue sans risquer de perdre ce
+	# qu'elle contient : on la met de côté intacte plutôt que de l'écraser au prochain save.
+	var version := int(data.get("version", 1))
+	if version > SAVE_VERSION:
+		push_error("PlayerManager: sauvegarde en version %d, le jeu en gère %d. Mise de côté en .future."
+			% [version, SAVE_VERSION])
+		DirAccess.copy_absolute(save_path, save_path + ".future")
+		return false
+	if version < SAVE_VERSION:
+		# Les champs absents prennent leur valeur par défaut : la migration est implicite.
+		print("PlayerManager: sauvegarde version %d migrée vers %d." % [version, SAVE_VERSION])
+
 	eclats_dimensionnels = int(data.get("eclats_dimensionnels", 0))
 	or_de_guilde = int(data.get("or_de_guilde", 0))
 	inventory = {}
@@ -162,11 +174,14 @@ func load_game() -> bool:
 		if not _catalog.has(character_id):
 			push_warning("PlayerManager: personnage inconnu ignoré à la sauvegarde : %s" % character_id)
 			continue
-		var entry: Dictionary = saved_inventory[character_id]
+		# Une entrée corrompue (mauvais type) est remplacée par un guerrier neuf plutôt que
+		# de faire planter tout le chargement.
+		var raw: Variant = saved_inventory[character_id]
+		var entry: Dictionary = raw if raw is Dictionary else {}
 		inventory[character_id] = {
-			"level": int(entry.get("level", 1)),
-			"stars": int(entry.get("stars", 1)),
-			"xp": int(entry.get("xp", 0)),
+			"level": clampi(int(entry.get("level", 1)), 1, progression.max_level),
+			"stars": clampi(int(entry.get("stars", 1)), 1, progression.max_stars),
+			"xp": maxi(int(entry.get("xp", 0)), 0),
 		}
 	story_progress = {}
 	for chapter_id: String in data.get("story_progress", {}):

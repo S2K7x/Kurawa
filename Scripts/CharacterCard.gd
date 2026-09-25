@@ -66,7 +66,7 @@ func _apply() -> void:
 		_art.texture = _art_placeholder(element_color)
 		_art.stretch_mode = TextureRect.STRETCH_SCALE
 		_initials.show()
-		_initials.text = _initials_of(str(_character.get("name", "")))
+		_initials.text = UiUtils.initials(str(_character.get("name", "")))
 	_name_label.text = str(_character.get("name", "???"))
 
 	_rarity_label.text = rarity
@@ -130,11 +130,6 @@ func _art_placeholder(element_color: Color) -> GradientTexture2D:
 	texture.height = 192
 	return texture
 
-func _initials_of(character_name: String) -> String:
-	var initials := ""
-	for part: String in character_name.split(" ", false):
-		initials += part.substr(0, 1).to_upper()
-	return initials
 
 func _gui_input(event: InputEvent) -> void:
 	# Les événements tactiles sont convertis en clics souris par Godot : un seul chemin suffit

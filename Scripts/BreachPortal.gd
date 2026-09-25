@@ -21,6 +21,10 @@ func _ready() -> void:
 	resized.connect(queue_redraw)
 
 func _process(delta: float) -> void:
+	# Un onglet caché n'a pas à faire tourner ses anneaux : sans ce test, la Brèche se
+	# redessinait soixante fois par seconde pendant qu'on visitait la galerie.
+	if not is_visible_in_tree():
+		return
 	_time += delta
 	_charge = maxf(_charge - delta * 1.2, 0.0)
 	queue_redraw()

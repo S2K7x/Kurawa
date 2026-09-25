@@ -11,6 +11,8 @@ signal finished(victory: bool)
 signal replay_requested(encounter: Dictionary, team_ids: Array)
 
 const UNIT_SCENE := preload("res://Scenes/CombatUnit.tscn")
+## Nombre de tours annoncés dans le bandeau d'ordre de passage.
+const TURN_PREVIEW_COUNT := 7
 
 ## Respiration entre deux actions, pour que le combat reste lisible. Mise à 0 dans les tests.
 var step_delay: float = 0.55
@@ -21,6 +23,12 @@ var step_delay: float = 0.55
 @onready var _actor_label: Label = %ActorLabel
 @onready var _actions: GridContainer = %Actions
 @onready var _result: Control = %Result
+@onready var _turn_order: HBoxContainer = %TurnOrder
+@onready var _turn_label: Label = %TurnLabel
+@onready var _gauge_bar: ProgressBar = %GaugeBar
+@onready var _gauge_label: Label = %GaugeLabel
+@onready var _skill_button: Button = %SkillButton
+@onready var _ultimate_button: Button = %UltimateButton
 
 var _player: PlayerManager
 var _combat: CombatManager
@@ -88,9 +96,7 @@ func begin(encounter: Dictionary, team_ids: Array) -> void:
 	_advance()
 
 func _build_row(row: HBoxContainer, units: Array[Combatant]) -> void:
-	for child: Node in row.get_children():
-		row.remove_child(child)
-		child.queue_free()
+	UiUtils.clear_children(row)
 	for unit: Combatant in units:
 		var widget: CombatUnit = UNIT_SCENE.instantiate()
 		row.add_child(widget)
@@ -126,11 +132,11 @@ func _advance() -> void:
 
 func _prompt_player() -> void:
 	_actor_label.text = "AU TOUR DE %s" % _current_actor.name.to_upper()
-	%SkillButton.disabled = _current_actor.skill_cooldown > 0
-	%SkillButton.text = "COMPÉTENCE" if _current_actor.skill_cooldown == 0 \
+	_skill_button.disabled = _current_actor.skill_cooldown > 0
+	_skill_button.text = "COMPÉTENCE" if _current_actor.skill_cooldown == 0 \
 		else "COMPÉTENCE (%d)" % _current_actor.skill_cooldown
-	%SkillButton.tooltip_text = str(_current_actor.skill.get("description", ""))
-	%UltimateButton.disabled = not _combat.can_use_ultimate(_current_actor)
+	_skill_button.tooltip_text = str(_current_actor.skill.get("description", ""))
+	_ultimate_button.disabled = not _combat.can_use_ultimate(_current_actor)
 	if _target == null or not _target.is_alive():
 		var living := _combat._living(_combat.enemies)
 		_target = null if living.is_empty() else living[0]
@@ -189,7 +195,7 @@ func _on_unit_selected(unit: Combatant) -> void:
 # --- Affichage ---------------------------------------------------------------------------------
 
 func _flush() -> void:
-	%TurnLabel.text = "TOUR %d" % _combat.turn_count
+	_turn_label.text = "TOUR %d" % _combat.turn_count
 	_refresh_turn_order()
 	_refresh_gauge()
 	while _logged_events < _combat.events.size():
@@ -238,19 +244,19 @@ func _widget_named(unit_name: String) -> CombatUnit:
 ## Bandeau d'ordre des tours : sans lui, l'ATB est une boîte noire et le joueur ne peut pas
 ## planifier. C'est ce qui transforme « cliquer sur attaquer » en décision (cf. Epic Seven).
 func _refresh_turn_order() -> void:
-	var host: HBoxContainer = %TurnOrder
-	for child: Node in host.get_children():
-		host.remove_child(child)
-		child.queue_free()
+	var host := _turn_order
+	UiUtils.clear_children(host)
 	if _combat == null:
 		return
-	for index in range(_combat.turn_order_preview(7).size()):
-		var unit: Combatant = _combat.turn_order_preview(7)[index]
-		host.add_child(_turn_chip(unit, index == 0))
+	# Une seule simulation : l'appeler dans la condition de boucle la relançait à chaque tour
+	# affiché, soit neuf simulations complètes par rafraîchissement.
+	var upcoming := _combat.turn_order_preview(TURN_PREVIEW_COUNT)
+	for index in range(upcoming.size()):
+		host.add_child(_turn_chip(upcoming[index], index == 0))
 
 func _turn_chip(unit: Combatant, is_next: bool) -> Label:
 	var chip := Label.new()
-	chip.text = _initials(unit.name)
+	chip.text = UiUtils.initials(unit.name)
 	chip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	chip.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	chip.custom_minimum_size = Vector2(40, 34)
@@ -263,20 +269,15 @@ func _turn_chip(unit: Combatant, is_next: bool) -> Label:
 	chip.add_theme_stylebox_override("normal", style)
 	return chip
 
-func _initials(unit_name: String) -> String:
-	var initials := ""
-	for part: String in unit_name.split(" ", false):
-		initials += part.substr(0, 1).to_upper()
-	return initials
 
 func _refresh_gauge() -> void:
 	if _combat == null:
 		return
-	%GaugeBar.max_value = _combat._gauge_max
-	%GaugeBar.value = _combat.breach_gauge
-	%GaugeLabel.text = "BRÈCHE %d / %d%s" % [_combat.breach_gauge, _combat._gauge_max,
+	_gauge_bar.max_value = _combat._gauge_max
+	_gauge_bar.value = _combat.breach_gauge
+	_gauge_label.text = "BRÈCHE %d / %d%s" % [_combat.breach_gauge, _combat._gauge_max,
 		"  ·  PERCÉE PRÊTE" if _combat.breach_gauge >= _combat._gauge_max else ""]
-	%GaugeLabel.add_theme_color_override("font_color",
+	_gauge_label.add_theme_color_override("font_color",
 		Style.GOLD if _combat.breach_gauge >= _combat._gauge_max else Style.TEXT_MUTED)
 
 func _refresh_widgets() -> void:
@@ -288,7 +289,7 @@ func _set_actions_enabled(enabled: bool) -> void:
 	for button: Button in _actions.get_children():
 		button.disabled = not enabled
 	if enabled and _combat != null and _current_actor != null:
-		%UltimateButton.disabled = not _combat.can_use_ultimate(_current_actor)
+		_ultimate_button.disabled = not _combat.can_use_ultimate(_current_actor)
 		%SkillButton.disabled = _current_actor.skill_cooldown > 0
 	if not enabled:
 		_actor_label.text = " "

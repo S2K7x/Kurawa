@@ -19,7 +19,7 @@ var _team_size: int = 3
 
 func setup(player: PlayerManager) -> void:
 	_player = player
-	_team_size = int(DataLoader.load_json(DataLoader.ECONOMY_PATH).get("combat", {}).get("team_size", 3))
+	_team_size = int(DataLoader.economy().get("combat", {}).get("team_size", 3))
 
 func _ready() -> void:
 	%EnemyPanel.add_theme_stylebox_override("panel", Style.crimson_panel(14))
@@ -50,9 +50,7 @@ func open(encounter: Dictionary) -> void:
 	show()
 
 func _build_grid() -> void:
-	for child: Node in _grid.get_children():
-		_grid.remove_child(child)
-		child.queue_free()
+	UiUtils.clear_children(_grid)
 	var ids: Array = _player.get_owned_character_ids()
 	ids.sort_custom(func(a: String, b: String) -> bool:
 		return int(_player.inventory[a]["level"]) > int(_player.inventory[b]["level"]))

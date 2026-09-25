@@ -53,6 +53,7 @@ Kurawa/
 │   ├── SummonReveal.gd     # révélation des tirages (effets par rareté)
 │   ├── InventoryGrid.gd    # galerie + filtres + fiche détaillée
 │   ├── CharacterCard.gd    # carte de guerrier réutilisable
+│   ├── UiUtils.gd          # utilitaires d'UI partagés (initiales, vidage de conteneur)
 │   ├── Style.gd            # palette et fabriques de styles (source unique de l'habillage)
 │   ├── SigilBackground.gd  # fond commun : sceau en filigrane + vignette
 │   ├── OrnateFrame.gd      # cadre gravé (liseré + équerres d'angle)
@@ -74,7 +75,8 @@ Kurawa/
 ├── Tests/
 │   ├── run_tests.gd        # tests headless (voir « Lancer les tests »)
 │   ├── capture_screens.gd  # captures PNG des écrans (voir « Relire l'UI »)
-│   └── balance_report.gd   # taux de victoire par combat et par niveau (voir « Équilibrer »)
+│   ├── balance_report.gd   # taux de victoire par combat et par niveau (voir « Équilibrer »)
+│   └── profile_report.gd   # mesure des chemins chauds (voir « Profiler »)
 ├── Scenes/
 │   ├── Main.tscn           # scène principale (lancée par project.godot)
 │   ├── SummonScreen.tscn   # écran d'invocation (Brèche)
@@ -111,7 +113,7 @@ par l'auteur : ils définissent la direction visuelle décrite ci-dessous.
 
 **Ne pas sauter à la Phase 2 avant que la Phase 1 soit testée et fonctionnelle** (probabilités de tirage vérifiées, sauvegarde fiable).
 
-**État au 2026-09-25 :** Phases 1 à 4 terminées, plus une Phase 5 d'approfondissement (combat tactique, 28 guerriers illustrés, visionneuse plein écran, boucles d'engagement). `Tests/run_tests.gd` : 152 vérifications. Reste l'audio et la signature iOS.
+**État au 2026-09-25 :** Phases 1 à 4 terminées, plus une Phase 5 d'approfondissement (combat tactique, 28 guerriers illustrés, visionneuse plein écran, boucles d'engagement). `Tests/run_tests.gd` : 157 vérifications. Reste l'audio et la signature iOS.
 
 ## Architecture Phases 1-2
 
@@ -197,6 +199,29 @@ casse quand on saute un jour. Ces boucles donnent des raisons de revenir, pas de
 s'inquiéter — si une idée de rétention ne tient pas sans monnaie réelle, elle n'a pas sa place ici.
 
 `PlayerManager` est le seul à créditer les récompenses (`claim_*`), comme pour le reste.
+
+## Profiler
+
+```bash
+/Applications/Godot.app/Contents/MacOS/Godot --headless --path . -s res://Tests/profile_report.gd
+```
+
+Mesure les chemins chauds (chargement de données, création de combattants, combat complet,
+sauvegarde, construction de la galerie). La règle, reprise de la documentation Godot : **on
+mesure avant d'optimiser**, et on remesure après. C'est ce profileur qui a montré que
+`character_art()` coûtait 17 ms par appel avant mise en cache — soit un demi-seconde de
+blocage à chaque affichage de la galerie.
+
+Pièges déjà corrigés, à ne pas réintroduire :
+- Ne jamais appeler `ResourceLoader.exists()` dans un chemin chaud : passer par
+  `DataLoader.character_art()`, qui met en cache (y compris les absences)
+- Les données de `Data/*.json` se lisent via les accesseurs en cache de `DataLoader`
+  (`characters_db()`, `economy()`, `character()`, `enemy()`), jamais par `load_json()` direct
+- Un écran caché ne se reconstruit pas : `_refresh()` sort tôt si `not visible`, et
+  `on_shown()` rattrape le retard
+- Un décor animé teste `is_visible_in_tree()` avant de redessiner
+- Ne pas appeler une fonction coûteuse dans une condition de boucle (`turn_order_preview()`
+  y était relancé à chaque itération)
 
 ## Équilibrer
 
